@@ -1,0 +1,19 @@
+{
+    "templateName": "Dutos Flexiveis - Projeto Básico (Exemplo)",
+    "description": "Template para documentação de dutos flexiveis na fase de projeto básico.",
+    "defaultTabs": [
+      {
+        "tabId": "identificacao_geral",
+        "tabName": "Identificação",
+        "columns": ["Nome do Campo", "Plataforma De", "Plataforma Para", "Fluido Principal", "Diâmetro Externo (mm)"],
+        "allowUserCreation": true
+      },
+      {
+        "tabId": "secoes_principais",
+        "tabName": "Seções do Duto",
+        "columns": ["ID Seção", "Comprimento (m)", "Material", "Espessura Parede (mm)", "Revestimento Externo"],
+        "allowUserCreation": true
+      }
+    ],
+    "allowCustomTabs": true
+  }

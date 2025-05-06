@@ -1,0 +1,30 @@
+{
+    "documentId": "Duto_Rigido_001",
+    "documentType": "ENGENHARIA_SUBMARINA",
+    "documentName": "Projeto Exemplo Duto Flexivel Alpha",
+    "templatePath": "SUB/Basicos/dutos_flexiveis",
+    "templateId": "duto_flexivel",
+    "createdBy": "favini@ifclabs.org",
+    "createdAt": "2025-05-06T12:30:00Z",
+    "lastModifiedBy": "usuario.exemplo@ifclabs.org",
+    "lastModifiedAt": "2025-05-06T12:35:00Z",
+    "tabs": [
+      {
+        "id": "identificacao_geral_inst1",
+        "name": "Identificação",
+        "order": 0,
+        "sourceFile": "identificacao.csv",
+        "templateTabIdRef": "identificacao_geral"
+      },
+      {
+        "id": "secoes_principais_inst1",
+        "name": "Seções do Duto",
+        "order": 1,
+        "sourceFile": "secoes_do_duto.csv",
+        "templateTabIdRef": "secoes_principais"
+      }
+    ],
+    "documentComments": [
+       {"user": "revisor.chefe@ifclabs.org", "timestamp": "2025-05-06T12:40:00Z", "text": "Favor verificar os comprimentos das seções com o último levantamento topográfico."}
+    ]
+  }

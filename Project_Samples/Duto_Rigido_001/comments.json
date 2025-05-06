@@ -1,0 +1,61 @@
+[
+    {
+      "pointId": "point-uuid-comment-001",
+      "documentId": "Duto_Rigido_001",
+      "tabId": "identificacao_geral_inst1",
+      "cellCoordinates": {
+        "rowId": "uuid-row-id-001",
+        "columnHeader": "Diâmetro Externo (mm)"
+      },
+      "threads": [
+        {
+          "threadId": "thread-uuid-A01",
+          "status": "aberto",
+          "createdBy": "engenheiro.junior@ifclabs.org",
+          "createdAt": "2025-05-06T13:00:00Z",
+          "entries": [
+            {
+              "entryId": "entry-uuid-A11",
+              "user": "engenheiro.junior@ifclabs.org",
+              "timestamp": "2025-05-06T13:00:00Z",
+              "commentText": "Confirmar se este é o DE nominal ou incluindo revestimento.",
+              "type": "question"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pointId": "point-uuid-comment-002",
+      "documentId": "Duto_Rigido_001",
+      "tabId": "secoes_principais_inst1",
+      "cellCoordinates": {
+        "rowId": "uuid-secao-id-003",
+        "columnHeader": "Material"
+      },
+      "threads": [
+        {
+          "threadId": "thread-uuid-B01",
+          "status": "resolvido_pendente_revisao",
+          "createdBy": "especialista.materiais@ifclabs.org",
+          "createdAt": "2025-05-06T13:15:00Z",
+          "entries": [
+            {
+              "entryId": "entry-uuid-B11",
+              "user": "especialista.materiais@ifclabs.org",
+              "timestamp": "2025-05-06T13:15:00Z",
+              "commentText": "Sugiro X70 devido à profundidade. Por favor, verificar se o X65 atende ao colapso.",
+              "type": "suggestion"
+            },
+            {
+              "entryId": "entry-uuid-B12",
+              "user": "engenheiro.calculista@ifclabs.org",
+              "timestamp": "2025-05-06T13:45:00Z",
+              "commentText": "Cálculo de colapso refeito. X70 é mandatório aqui. Atualizei o valor na planilha para X70.",
+              "type": "response_resolution_attempt"
+            }
+          ]
+        }
+      ]
+    }
+  ]

@@ -1,0 +1,4 @@
+_RowID,ID Seção,Comprimento (m),Material,Espessura Parede (mm),Revestimento Externo
+uuid-secao-id-001,Sec001,1250.5,API 5L X65,12.7,Concreto 50mm
+uuid-secao-id-002,Sec002,3400.0,API 5L X65,12.7,Concreto 50mm
+uuid-secao-id-003,Sec003,875.2,API 5L X70,15.9,3LPE
