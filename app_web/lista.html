@@ -6,6 +6,25 @@
     <title>IFCLABS - Visualizador de Projetos</title>
     <link rel="stylesheet" href="style.css">
 </head>
+<script>
+    // Script de verificação de token (SIMULAÇÃO APENAS PARA MVP)
+    const authToken = sessionStorage.getItem('ifclabsAuthToken');
+    const expectedTokenPrefix = "MVP_TOKEN_IFCLABS_"; // Para uma verificação um pouco melhor que apenas a existência
+
+    if (!authToken || !authToken.startsWith(expectedTokenPrefix)) {
+        alert('Acesso não autorizado ou sessão expirada. Por favor, faça login.');
+        // Se o token não existir ou não for o esperado, redireciona para a página de login.
+        // Ajuste 'index.html' se o nome da sua página de login for diferente.
+        window.location.replace('index.html');
+    } else {
+        // Opcional: você pode pegar o nome do usuário se o armazenou
+        const loggedInUser = sessionStorage.getItem('ifclabsUser');
+        if (loggedInUser) {
+            console.log('Usuário logado (simulado):', loggedInUser);
+            // Você poderia, por exemplo, exibir "Bem-vindo, [usuário]" na página
+        }
+    }
+</script>
 <body>
     <header>
         <h1>Plataforma Colaborativa IFCLABS</h1>
