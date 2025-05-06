@@ -1,61 +1,73 @@
-// script.js - Versão com fetch() para IFCLABS MVP
+// script.js - Versão com fetch() para IFCLABS MVP (arquivos da app na RAIZ do repo)
 
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Verificação de Token (Simulação) ---
     const authToken = sessionStorage.getItem('ifclabsAuthToken');
     const expectedTokenPrefix = "MVP_TOKEN_IFCLABS_";
 
-    // Se estivermos na página lista.html, verificamos o token
-    // Se não estivermos (ex: na index.html), não fazemos nada aqui sobre token
-    if (window.location.pathname.endsWith('lista.html')) {
+    // Verifica o caminho para determinar se estamos na lista.html
+    // GitHub Pages pode adicionar o nome do repositório no caminho.
+    const pathIsListaHtml = window.location.pathname.endsWith('lista.html') || window.location.pathname.endsWith('/IFCLABS/lista.html');
+
+    if (pathIsListaHtml) {
         if (!authToken || !authToken.startsWith(expectedTokenPrefix)) {
             alert('Acesso não autorizado ou sessão expirada. Por favor, faça login.');
-            window.location.replace('index.html'); // Ou o nome da sua página de login
-            return; // Impede a execução do restante do script da lista.html
+            // Redireciona para index.html na mesma estrutura de URL
+            let indexPath = window.location.pathname.replace('lista.html', 'index.html');
+            if (!indexPath.endsWith('index.html')) { // Caso base /IFCLABS/
+                indexPath = window.location.pathname.endsWith('/') ? window.location.pathname + 'index.html' : window.location.pathname + '/index.html';
+                 // Se o repositório for a raiz do domínio, o path pode não ter IFCLABS
+                if (!window.location.hostname.includes('github.io')) { // Ex: domínio customizado
+                    indexPath = 'index.html';
+                } else if (!indexPath.includes('IFCLABS/index.html') && window.location.pathname.includes('IFCLABS')) {
+                     indexPath = '/IFCLABS/index.html';
+                } else if (!indexPath.includes('index.html')) {
+                    indexPath = 'index.html';
+                }
+
+            }
+            window.location.replace(indexPath);
+            return;
         }
         const loggedInUser = sessionStorage.getItem('ifclabsUser');
         if (loggedInUser) {
             console.log('Usuário logado (simulado):', loggedInUser);
-            // Ex: Tente encontrar um elemento para saudação, se existir
             const userGreetingElement = document.getElementById('user-greeting');
             if (userGreetingElement) {
-                userGreetingElement.textContent = `Bem-vindo, ${loggedInUser}!`;
+                userGreetingElement.textContent = `Usuário: ${loggedInUser}`;
             }
         }
     }
     // --- Fim da Verificação de Token ---
 
-
-    // Verifica se estamos na página lista.html antes de tentar carregar dados do projeto
-    if (window.location.pathname.endsWith('lista.html')) {
-        // Nomes das pastas dos seus projetos de exemplo.
-        const projectFolderNames = ["Duto_Rigido_001"]; // Adicione mais nomes de pastas de projetos aqui se tiver
-
-        window.projectsData = {}; // Objeto global para armazenar os dados dos projetos carregados
+    if (pathIsListaHtml) {
+        const projectFolderNames = ["Duto_Rigido_001"];
+        window.projectsData = {};
 
         async function fetchProjectData(folderName) {
             try {
-                //const basePath = `./Project_Samples/${folderName}`;
-                const basePath = `../Project_Samples/${folderName}`; // Adicionado ../ para subir um nível
+                // CAMINHO AJUSTADO PARA ARQUIVOS DA APP NA RAIZ DO REPOSITÓRIO:
+                const basePath = `./Project_Samples/${folderName}`;
+                const noCache = `?v=${new Date().getTime()}`;
 
-                const metadataResponse = await fetch(`${basePath}/metadata.json`);
-                if (!metadataResponse.ok) throw new Error(`Falha ao carregar metadata.json para ${folderName} (Status: ${metadataResponse.status})`);
+                const metadataResponse = await fetch(`${basePath}/metadata.json${noCache}`);
+                if (!metadataResponse.ok) throw new Error(`Falha ao carregar metadata.json para ${folderName} (Status: ${metadataResponse.status}) URL: ${metadataResponse.url}`);
                 const metadata = await metadataResponse.json();
 
-                const commentsResponse = await fetch(`${basePath}/comments.json`);
-                if (!commentsResponse.ok) throw new Error(`Falha ao carregar comments.json para ${folderName} (Status: ${commentsResponse.status})`);
+                const commentsResponse = await fetch(`${basePath}/comments.json${noCache}`);
+                if (!commentsResponse.ok) throw new Error(`Falha ao carregar comments.json para ${folderName} (Status: ${commentsResponse.status}) URL: ${commentsResponse.url}`);
                 const comments = await commentsResponse.json();
 
                 const tabsData = {};
                 if (metadata.tabs && metadata.tabs.length > 0) {
                     for (const tabInfo of metadata.tabs) {
                         if (tabInfo.sourceFile) {
-                            const csvResponse = await fetch(`${basePath}/${tabInfo.sourceFile}`);
-                            if (!csvResponse.ok) throw new Error(`Falha ao carregar ${tabInfo.sourceFile} para ${folderName} (Status: ${csvResponse.status})`);
+                            const csvResponse = await fetch(`${basePath}/${tabInfo.sourceFile}${noCache}`);
+                            if (!csvResponse.ok) throw new Error(`Falha ao carregar ${tabInfo.sourceFile} para ${folderName} (Status: ${csvResponse.status}) URL: ${csvResponse.url}`);
                             tabsData[tabInfo.sourceFile] = await csvResponse.text();
                         } else {
                             console.warn(`Aba "${tabInfo.name}" no metadata de ${folderName} não tem sourceFile definido.`);
-                            tabsData[tabInfo.sourceFile || tabInfo.name] = ""; // Adiciona entrada vazia para evitar erros posteriores
+                            tabsData[tabInfo.sourceFile || tabInfo.name] = "";
                         }
                     }
                 }
@@ -65,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const projectListDiv = document.getElementById('project-list');
                 if (projectListDiv) {
                     const errorItem = document.createElement('p');
-                    errorItem.textContent = `Erro ao carregar ${folderName}: ${error.message}`;
+                    errorItem.textContent = `Erro ao carregar ${folderName}: ${error.message}. Verifique a URL: ${error.urlAttempted || 'N/A'}`;
                     errorItem.style.color = 'red';
                     projectListDiv.appendChild(errorItem);
                 }
@@ -73,7 +85,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Carrega todos os projetos
         for (const folderName of projectFolderNames) {
             const data = await fetchProjectData(folderName);
             if (data) {
@@ -84,20 +95,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (Object.keys(window.projectsData).length > 0) {
             listProjects();
             const docViewer = document.getElementById('document-viewer');
-            if(docViewer) docViewer.style.display = 'none'; // Esconde inicialmente
+            if(docViewer) docViewer.style.display = 'none';
         } else {
             const projectListDiv = document.getElementById('project-list');
             if (projectListDiv) {
-                projectListDiv.innerHTML = "<p>Nenhum dado de projeto pôde ser carregado. Verifique o console para erros (F12) e se o Live Server está ativo.</p>";
+                projectListDiv.innerHTML = "<p>Nenhum dado de projeto pôde ser carregado. Verifique o console (F12) para erros, os caminhos dos arquivos e se os arquivos de dados existem no repositório.</p>";
             }
         }
-    } // Fim do if (window.location.pathname.endsWith('lista.html'))
+    }
 });
 
-
+// ... (Restante das funções listProjects, loadProject, parseCSV, loadTabData permanecem iguais) ...
 function listProjects() {
     const projectListDiv = document.getElementById('project-list');
-    if (!projectListDiv || !window.projectsData) return; // Proteção adicional
+    if (!projectListDiv || !window.projectsData) return; 
     projectListDiv.innerHTML = '';
 
     Object.keys(window.projectsData).forEach(projectName => {
@@ -118,6 +129,7 @@ function loadProject(projectName) {
         console.error("Dados do projeto ou metadados não encontrados para:", projectName);
         const docTitle = document.getElementById('document-title');
         if (docTitle) docTitle.textContent = `Erro ao carregar ${projectName}`;
+        // Limpar outras áreas também
         const tabButtonsDiv = document.getElementById('tab-buttons');
         if (tabButtonsDiv) tabButtonsDiv.innerHTML = '';
         const dataTableContainer = document.getElementById('data-table-container');
@@ -148,7 +160,7 @@ function loadProject(projectName) {
         if (project.metadata.documentComments && project.metadata.documentComments.length > 0) {
             project.metadata.documentComments.forEach(comment => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `(${new Date(comment.timestamp).toLocaleTimeString()}) ${comment.user}: ${comment.text}`;
+                listItem.textContent = `(${comment.timestamp ? new Date(comment.timestamp).toLocaleTimeString() : 'N/A'}) ${comment.user}: ${comment.text}`;
                 docCommentsList.appendChild(listItem);
             });
         } else {
@@ -157,7 +169,7 @@ function loadProject(projectName) {
     }
 
     const tabButtonsDiv = document.getElementById('tab-buttons');
-    if(!tabButtonsDiv) return;
+    if(!tabButtonsDiv) return; // Adicionado guarda
     tabButtonsDiv.innerHTML = '';
 
     const currentTabNameEl = document.getElementById('current-tab-name');
@@ -174,14 +186,15 @@ function loadProject(projectName) {
             tabButton.onclick = (event) => {
                 document.querySelectorAll('#tab-buttons button.active').forEach(btn => btn.classList.remove('active'));
                 event.currentTarget.classList.add('active');
-                const tabCsvString = project.tabsData[tabInfo.sourceFile];
+                // Certifique-se que project.tabsData existe e tem a sourceFile
+                const tabCsvString = project.tabsData && project.tabsData[tabInfo.sourceFile] ? project.tabsData[tabInfo.sourceFile] : null;
                 loadTabData(projectName, tabInfo, tabCsvString, project.comments);
             }
             tabButtonsDiv.appendChild(tabButton);
 
             if (index === 0) {
                 tabButton.classList.add('active');
-                const firstTabCsvString = project.tabsData[tabInfo.sourceFile];
+                 const firstTabCsvString = project.tabsData && project.tabsData[tabInfo.sourceFile] ? project.tabsData[tabInfo.sourceFile] : null;
                 loadTabData(projectName, tabInfo, firstTabCsvString, project.comments);
             }
         });
@@ -237,7 +250,7 @@ function loadTabData(projectName, tabInfo, tabCsvString, projectCellComments) {
 
                 if (projectCellComments && projectCellComments.length > 0 && cellIndex < columnHeaders.length) {
                     const columnHeader = columnHeaders[cellIndex];
-                    if (tabInfo && tabInfo.id && rowId && columnHeader) { // Adicionada verificação para tabInfo.id
+                    if (tabInfo && tabInfo.id && rowId && columnHeader) { 
                         const hasComment = projectCellComments.some(commentPoint =>
                             commentPoint.tabId === tabInfo.id &&
                             commentPoint.cellCoordinates.rowId === rowId &&
@@ -251,9 +264,9 @@ function loadTabData(projectName, tabInfo, tabCsvString, projectCellComments) {
                                 c.cellCoordinates.rowId === rowId &&
                                 c.cellCoordinates.columnHeader === columnHeader
                             ).forEach(cPoint => {
-                                if (cPoint.threads) { // Verifica se threads existe
+                                if (cPoint.threads) { 
                                     cPoint.threads.forEach(thread => {
-                                        if (thread.entries) { // Verifica se entries existe
+                                        if (thread.entries) { 
                                             thread.entries.forEach(entry => {
                                                 commentDetails += `- ${entry.user} (${entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : 'N/A'}): ${entry.commentText} [${entry.type}]\n`;
                                             });
