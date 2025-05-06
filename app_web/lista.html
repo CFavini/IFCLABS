@@ -3,38 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IFCLABS - Visualizador de Projetos</title>
+    <title>IFCLABS - Lista de Projetos (MVP)</title>
     <link rel="stylesheet" href="style.css">
-</head>
-<script>
-    // Script de verificação de token (SIMULAÇÃO APENAS PARA MVP)
-    const authToken = sessionStorage.getItem('ifclabsAuthToken');
-    const expectedTokenPrefix = "MVP_TOKEN_IFCLABS_"; // Para uma verificação um pouco melhor que apenas a existência
-
-    if (!authToken || !authToken.startsWith(expectedTokenPrefix)) {
-        alert('Acesso não autorizado ou sessão expirada. Por favor, faça login.');
-        // Se o token não existir ou não for o esperado, redireciona para a página de login.
-        // Ajuste 'index.html' se o nome da sua página de login for diferente.
-        window.location.replace('index.html');
-    } else {
-        // Opcional: você pode pegar o nome do usuário se o armazenou
-        const loggedInUser = sessionStorage.getItem('ifclabsUser');
-        if (loggedInUser) {
-            console.log('Usuário logado (simulado):', loggedInUser);
-            // Você poderia, por exemplo, exibir "Bem-vindo, [usuário]" na página
-        }
-    }
-</script>
+    </head>
 <body>
     <header>
-        <h1>Plataforma Colaborativa IFCLABS</h1>
+        <h1>Plataforma Colaborativa IFCLABS (MVP)</h1>
+        <div id="user-info" style="color: white; text-align: right; padding-right: 20px;">
+            <span id="user-greeting"></span>
+            <button id="logout-button" style="margin-left: 10px; display: none;">Sair</button>
+        </div>
     </header>
 
     <main>
         <section id="project-selector">
-            <h2>Meus Projetos:</h2>
+            <h2>Meus Projetos de Exemplo</h2>
             <div id="project-list">
-                </div>
+                <p>Carregando projetos...</p>
+            </div>
         </section>
 
         <section id="document-viewer" style="display: none;">
@@ -64,9 +50,31 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 IFCLABS. Todos os direitos reservados.</p>
+        <p>&copy; 2025 IFCLABS. MVP.</p>
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Pequeno script adicional para lista.html (logout e saudação)
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedInUser = sessionStorage.getItem('ifclabsUser');
+            const userGreetingElement = document.getElementById('user-greeting');
+            const logoutButton = document.getElementById('logout-button');
+
+            if (loggedInUser && userGreetingElement && logoutButton) {
+                userGreetingElement.textContent = `Usuário: ${loggedInUser}`;
+                logoutButton.style.display = 'inline-block';
+                logoutButton.onclick = () => {
+                    sessionStorage.removeItem('ifclabsAuthToken');
+                    sessionStorage.removeItem('ifclabsUser');
+                    alert('Você foi desconectado.');
+                    window.location.replace('index.html');
+                };
+            } else if (userGreetingElement && logoutButton) { // Se não estiver logado, mas os elementos existirem
+                 logoutButton.style.display = 'none';
+                 userGreetingElement.textContent = '';
+            }
+        });
+    </script>
 </body>
 </html>
