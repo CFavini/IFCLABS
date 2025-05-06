@@ -1,4 +1,4 @@
-// script.js - Edição de Células e Linhas
+// script.js - Versão com fetch() para IFCLABS MVP (CORRIGIDO)
 
 document.addEventListener('DOMContentLoaded', async () => {
     // --- Verificação de Token (Simulação) ---
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!authToken || !authToken.startsWith(expectedTokenPrefix)) {
             alert('Acesso não autorizado ou sessão expirada. Por favor, faça login.');
             let indexPath = 'index.html';
-            if (window.location.pathname.includes('/IFCLABS/')) {
+            if (window.location.pathname.includes('/IFCLABS/')) { // Ajusta para subdiretório do repo no GitHub Pages
                 indexPath = '/IFCLABS/index.html';
             }
             window.location.replace(indexPath);
@@ -30,19 +30,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (pathIsListaHtml) {
         const projectFolderNames = ["Duto_Rigido_001"];
         window.projectsData = {};
-        window.currentProjectName = null; // Para saber qual projeto está ativo
-        window.currentTabInfo = null;    // Para saber qual aba está ativa
+        window.currentProjectName = null;
+        window.currentTabInfo = null;
 
         async function fetchProjectData(folderName) {
             try {
-                const basePath = `./Project_Samples/${folderName}`;
+                const basePath = `./Project_Samples/${folderName}`; // CORRETO para arquivos da app na raiz
                 const noCache = `?v=${new Date().getTime()}`;
 
-                const metadataResponse = await fetch(`<span class="math-inline">\{basePath\}/metadata\.json</span>{noCache}`);
+                const metadataUrl = `${basePath}/metadata.json${noCache}`;
+                console.log("Tentando buscar metadata:", metadataUrl); // LOG PARA DEPURAÇÃO
+                const metadataResponse = await fetch(metadataUrl);
                 if (!metadataResponse.ok) throw new Error(`Falha ao carregar metadata.json para ${folderName} (Status: ${metadataResponse.status}) URL: ${metadataResponse.url}`);
                 const metadata = await metadataResponse.json();
 
-                const commentsResponse = await fetch(`<span class="math-inline">\{basePath\}/comments\.json</span>{noCache}`);
+                const commentsUrl = `${basePath}/comments.json${noCache}`;
+                console.log("Tentando buscar comments:", commentsUrl); // LOG PARA DEPURAÇÃO
+                const commentsResponse = await fetch(commentsUrl);
                 if (!commentsResponse.ok) throw new Error(`Falha ao carregar comments.json para ${folderName} (Status: ${commentsResponse.status}) URL: ${commentsResponse.url}`);
                 const comments = await commentsResponse.json();
 
@@ -50,9 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (metadata.tabs && metadata.tabs.length > 0) {
                     for (const tabInfo of metadata.tabs) {
                         if (tabInfo.sourceFile) {
-                            const csvResponse = await fetch(`<span class="math-inline">\{basePath\}/</span>{tabInfo.sourceFile}${noCache}`);
+                            const csvUrl = `${basePath}/${tabInfo.sourceFile}${noCache}`;
+                            console.log(`Tentando buscar CSV (${tabInfo.name}):`, csvUrl); // LOG PARA DEPURAÇÃO
+                            const csvResponse = await fetch(csvUrl);
                             if (!csvResponse.ok) throw new Error(`Falha ao carregar ${tabInfo.sourceFile} para ${folderName} (Status: ${csvResponse.status}) URL: ${csvResponse.url}`);
-                            // Armazenamos como texto, parsearemos depois para array de arrays
                             tabsData[tabInfo.sourceFile] = await csvResponse.text();
                         } else {
                             console.warn(`Aba "${tabInfo.name}" no metadata de ${folderName} não tem sourceFile definido.`);
@@ -60,15 +65,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
                     }
                 }
-                // Parseia os CSVs para arrays de arrays e armazena em uma nova propriedade
                 const parsedTabsData = {};
                 for (const key in tabsData) {
                     parsedTabsData[key] = parseCSV(tabsData[key]);
                 }
-                return { metadata, tabsData: parsedTabsData, comments }; // Armazena dados parseados
+                return { metadata, tabsData: parsedTabsData, comments };
             } catch (error) {
                 console.error(`Erro ao carregar dados para o projeto ${folderName}:`, error);
-                // ... (código de tratamento de erro existente)
+                const projectListDiv = document.getElementById('project-list');
+                if (projectListDiv) {
+                    const errorItem = document.createElement('p');
+                    const failedUrl = error.message.includes("URL:") ? error.message.substring(error.message.indexOf("URL:") + 5).trim() : `Não especificada (${basePath})`;
+                    errorItem.textContent = `Erro ao carregar ${folderName}. Arquivo não encontrado em ${failedUrl}. Verifique o console para detalhes, o caminho e se o arquivo existe no repositório.`;
+                    errorItem.style.color = 'red';
+                    projectListDiv.appendChild(errorItem);
+                }
                 return null;
             }
         }
@@ -85,13 +96,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const docViewer = document.getElementById('document-viewer');
             if(docViewer) docViewer.style.display = 'none';
         } else {
-            // ... (código de tratamento de erro existente)
+            const projectListDiv = document.getElementById('project-list');
+            if (projectListDiv) {
+                if (projectListDiv.getElementsByTagName('p').length === 0 && projectListDiv.getElementsByTagName('button').length === 0) {
+                     projectListDiv.innerHTML = "<p>Nenhum dado de projeto pôde ser carregado. Verifique o console (F12) para erros, os caminhos dos arquivos e se os arquivos de dados existem no repositório.</p>";
+                }
+            }
         }
     }
 });
 
 function listProjects() {
-    // ... (código existente, sem alterações)
     const projectListDiv = document.getElementById('project-list');
     if (!projectListDiv || !window.projectsData) return;
     projectListDiv.innerHTML = '';
@@ -109,17 +124,24 @@ function listProjects() {
 }
 
 function loadProject(projectName) {
-    window.currentProjectName = projectName; // Define projeto ativo
+    window.currentProjectName = projectName;
     const project = window.projectsData[projectName];
-    // ... (código existente para preencher metadados do documento, etc.)
 
-    // Adicionar botão de Salvar/Download (inicialmente escondido ou desabilitado)
-    const saveButtonContainer = document.getElementById('save-button-container'); // Você precisará criar este container no HTML
-    if (saveButtonContainer) {
-        saveButtonContainer.innerHTML = `<button id="save-changes-button">Baixar Arquivos Modificados</button>`;
-        document.getElementById('save-changes-button').onclick = downloadModifiedFiles;
+    if (!project || !project.metadata) {
+        console.error("Dados do projeto ou metadados não encontrados para:", projectName);
+        // ... (limpeza da UI como antes)
+        return;
     }
-    // ... (restante do código loadProject, como preencher metadados e comentários gerais)
+    
+    const saveButtonContainer = document.getElementById('save-button-container'); 
+    if (saveButtonContainer) { // Adicionado para garantir que o container exista
+        saveButtonContainer.innerHTML = `<button id="save-changes-button">Baixar Arquivos Modificados</button>`;
+        const saveBtn = document.getElementById('save-changes-button');
+        if(saveBtn) saveBtn.onclick = downloadModifiedFiles; // Adicionado para garantir que o botão exista
+    }
+
+
+    // ... (código existente para preencher metadados do documento, etc.)
     const docViewer = document.getElementById('document-viewer');
     if(docViewer) docViewer.style.display = 'block';
 
@@ -167,15 +189,15 @@ function loadProject(projectName) {
             tabButton.onclick = (event) => {
                 document.querySelectorAll('#tab-buttons button.active').forEach(btn => btn.classList.remove('active'));
                 event.currentTarget.classList.add('active');
-                window.currentTabInfo = tabInfo; // Define aba ativa
-                const tabDataArray = project.tabsData[tabInfo.sourceFile]; // Já deve ser array de arrays
+                window.currentTabInfo = tabInfo;
+                const tabDataArray = project.tabsData[tabInfo.sourceFile];
                 loadTabData(projectName, tabInfo, tabDataArray, project.comments);
             }
             tabButtonsDiv.appendChild(tabButton);
 
             if (index === 0) {
                 tabButton.classList.add('active');
-                window.currentTabInfo = tabInfo; // Define aba ativa
+                window.currentTabInfo = tabInfo;
                 const firstTabDataArray = project.tabsData[tabInfo.sourceFile];
                 loadTabData(projectName, tabInfo, firstTabDataArray, project.comments);
             }
@@ -185,37 +207,30 @@ function loadProject(projectName) {
     }
 }
 
-
 function parseCSV(csvString) {
     if (typeof csvString !== 'string') {
         console.warn("parseCSV: input is not a string, returning empty array.", csvString);
         return [];
     }
     const lines = csvString.trim().split(/\r?\n/);
-    return lines.map(line => {
-        // TODO: Implementar um parser CSV mais robusto que lide com aspas e vírgulas dentro de campos
-        return line.split(',');
-    });
+    return lines.map(line => line.split(','));
 }
 
-function loadTabData(projectName, tabInfo, dataRows, projectCellComments) { // dataRows agora é array de arrays
+function loadTabData(projectName, tabInfo, dataRows, projectCellComments) {
     const currentTabNameEl = document.getElementById('current-tab-name');
     if(currentTabNameEl) currentTabNameEl.textContent = `Dados da Aba: ${tabInfo.name}`;
 
     const dataTableContainer = document.getElementById('data-table-container');
     if(!dataTableContainer) return;
-    dataTableContainer.innerHTML = ''; // Limpa antes de adicionar botões e tabela
+    dataTableContainer.innerHTML = '';
 
-    // Botões de Ação da Aba
     const actionButtonsDiv = document.createElement('div');
     actionButtonsDiv.className = 'tab-action-buttons';
     const addRowButton = document.createElement('button');
     addRowButton.textContent = 'Adicionar Linha';
     addRowButton.onclick = () => addRowToData(projectName, tabInfo.sourceFile);
     actionButtonsDiv.appendChild(addRowButton);
-    // Adicionar mais botões aqui (ex: Adicionar Coluna, Remover Linha Selecionada)
     dataTableContainer.appendChild(actionButtonsDiv);
-
 
     if (!Array.isArray(dataRows)) {
         console.error("loadTabData: dataRows is not an array", dataRows);
@@ -234,25 +249,23 @@ function loadTabData(projectName, tabInfo, dataRows, projectCellComments) { // d
         });
 
         const tbody = table.createTBody();
-        for (let i = 1; i < dataRows.length; i++) { // Começa em 1 para pular cabeçalho
+        for (let i = 1; i < dataRows.length; i++) {
             if (dataRows[i].join('').trim() === '') continue;
 
             const dataRowEl = tbody.insertRow();
-            dataRowEl.dataset.rowIndex = i; // Armazena o índice original da linha nos dados
+            dataRowEl.dataset.rowIndex = i;
             const rowId = dataRows[i][0] ? dataRows[i][0].trim() : `generated-rowid-${i}`;
 
             dataRows[i].forEach((cellText, cellIndex) => {
                 const cell = dataRowEl.insertCell();
                 cell.textContent = cellText.trim();
-                cell.setAttribute('contenteditable', 'true'); // <<< TORNA A CÉLULA EDITÁVEL
-                cell.dataset.columnIndex = cellIndex; // Armazena o índice da coluna
+                cell.setAttribute('contenteditable', 'true');
+                cell.dataset.columnIndex = cellIndex;
 
-                // Event listener para salvar alterações da célula
-                cell.addEventListener('blur', (event) => { // 'blur' é quando a célula perde o foco
+                cell.addEventListener('blur', (event) => {
                     updateCellData(projectName, tabInfo.sourceFile, i, cellIndex, event.target.textContent);
                 });
 
-                // ... (código existente para destacar comentários)
                 if (projectCellComments && projectCellComments.length > 0 && cellIndex < columnHeaders.length) {
                     const columnHeader = columnHeaders[cellIndex];
                     if (tabInfo && tabInfo.id && rowId && columnHeader) {
@@ -263,7 +276,6 @@ function loadTabData(projectName, tabInfo, dataRows, projectCellComments) { // d
                         );
                         if (hasComment) {
                             cell.classList.add('has-comment');
-                            // ... (lógica de tooltip do comentário)
                             let commentDetails = "Comentários:\n";
                             projectCellComments.filter(c =>
                                 c.tabId === tabInfo.id &&
@@ -274,7 +286,7 @@ function loadTabData(projectName, tabInfo, dataRows, projectCellComments) { // d
                                     cPoint.threads.forEach(thread => {
                                         if (thread.entries) {
                                             thread.entries.forEach(entry => {
-                                                commentDetails += `- <span class="math-inline">\{entry\.user\} \(</span>{entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : 'N/A'}): <span class="math-inline">\{entry\.commentText\} \[</span>{entry.type}]\n`;
+                                                commentDetails += `- ${entry.user} (${entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : 'N/A'}): ${entry.commentText} [${entry.type}]\n`;
                                             });
                                         }
                                     });
@@ -285,7 +297,6 @@ function loadTabData(projectName, tabInfo, dataRows, projectCellComments) { // d
                     }
                 }
             });
-            // Botão para remover linha
             const removeCell = dataRowEl.insertCell();
             const removeButton = document.createElement('button');
             removeButton.textContent = 'X';
@@ -300,7 +311,6 @@ function loadTabData(projectName, tabInfo, dataRows, projectCellComments) { // d
     dataTableContainer.appendChild(table);
 }
 
-// Função para atualizar os dados em memória quando uma célula é editada
 function updateCellData(projectName, sourceFile, rowIndex, columnIndex, newValue) {
     if (window.projectsData &&
         window.projectsData[projectName] &&
@@ -311,24 +321,20 @@ function updateCellData(projectName, sourceFile, rowIndex, columnIndex, newValue
 
         window.projectsData[projectName].tabsData[sourceFile][rowIndex][columnIndex] = newValue.trim();
         console.log(`Dado atualizado: Projeto ${projectName}, Aba ${sourceFile}, Linha ${rowIndex}, Coluna ${columnIndex}, Novo Valor: ${newValue.trim()}`);
-        // TODO: Adicionar lógica para marcar o arquivo como "sujo" para salvar/download
     } else {
         console.error("Erro ao tentar atualizar célula: caminho de dados inválido.", {projectName, sourceFile, rowIndex, columnIndex});
     }
 }
 
-// Função para adicionar uma nova linha aos dados em memória e recarregar a tabela
 function addRowToData(projectName, sourceFile) {
     const project = window.projectsData[projectName];
     if (project && project.tabsData && project.tabsData[sourceFile]) {
         const tabData = project.tabsData[sourceFile];
-        const numCols = tabData.length > 0 ? tabData[0].length : 1; // Pega número de colunas do cabeçalho ou assume 1
-        const newRow = Array(numCols).fill(''); // Cria linha vazia
-        // Gerar um _RowID único para a nova linha
-        newRow[0] = `uuid-row-id-<span class="math-inline">\{new Date\(\)\.getTime\(\)\}\-</span>{Math.random().toString(36).substr(2, 5)}`;
+        const numCols = tabData.length > 0 ? tabData[0].length : 1;
+        const newRow = Array(numCols).fill('');
+        newRow[0] = `uuid-row-id-${new Date().getTime()}-${Math.random().toString(36).substr(2, 5)}`;
         tabData.push(newRow);
 
-        // Recarrega a aba atual para mostrar a nova linha
         if (window.currentTabInfo && window.currentTabInfo.sourceFile === sourceFile) {
             loadTabData(projectName, window.currentTabInfo, tabData, project.comments);
         }
@@ -336,15 +342,13 @@ function addRowToData(projectName, sourceFile) {
     }
 }
 
-// Função para remover uma linha dos dados em memória e recarregar a tabela
 function removeRowFromData(projectName, sourceFile, rowIndexToRemove) {
     const project = window.projectsData[projectName];
     if (project && project.tabsData && project.tabsData[sourceFile]) {
         const tabData = project.tabsData[sourceFile];
-        if (rowIndexToRemove > 0 && rowIndexToRemove < tabData.length) { // Não remove cabeçalho
-            tabData.splice(rowIndexToRemove, 1); // Remove a linha
+        if (rowIndexToRemove > 0 && rowIndexToRemove < tabData.length) {
+            tabData.splice(rowIndexToRemove, 1);
 
-            // Recarrega a aba atual
             if (window.currentTabInfo && window.currentTabInfo.sourceFile === sourceFile) {
                 loadTabData(projectName, window.currentTabInfo, tabData, project.comments);
             }
@@ -353,22 +357,26 @@ function removeRowFromData(projectName, sourceFile, rowIndexToRemove) {
     }
 }
 
-// Função para converter array de arrays de volta para string CSV
 function convertArrayToCSV(dataArray) {
-    return dataArray.map(row =>
-        row.map(cell => {
-            let cellString = String(cell);
-            // Escapa aspas duplas e trata células com vírgulas ou quebras de linha
-            if (cellString.includes('"') || cellString.includes(',') || cellString.includes('\n')) {
+    if (!Array.isArray(dataArray)) { // Adicionada verificação
+        console.error("convertArrayToCSV: dataArray não é um array", dataArray);
+        return ""; // Retorna string vazia se não for um array
+    }
+    return dataArray.map(row => {
+        if (!Array.isArray(row)) { // Adicionada verificação para cada linha
+             console.error("convertArrayToCSV: linha não é um array", row);
+            return ""; // Retorna string vazia para linha inválida
+        }
+        return row.map(cell => {
+            let cellString = String(cell == null ? "" : cell); // Trata null ou undefined como string vazia
+            if (cellString.includes('"') || cellString.includes(',') || cellString.includes('\n') || cellString.includes('\r')) {
                 cellString = '"' + cellString.replace(/"/g, '""') + '"';
             }
             return cellString;
-        }).join(',')
-    ).join('\r\n');
+        }).join(',');
+    }).join('\r\n');
 }
 
-
-// Função para iniciar o download dos arquivos modificados
 function downloadModifiedFiles() {
     if (!window.currentProjectName || !window.projectsData[window.currentProjectName]) {
         alert("Nenhum projeto carregado para salvar.");
@@ -376,17 +384,14 @@ function downloadModifiedFiles() {
     }
     const project = window.projectsData[window.currentProjectName];
 
-    // 1. Download do metadata.json
     const metadataString = JSON.stringify(project.metadata, null, 2);
     downloadFile(metadataString, 'metadata.json', 'application/json');
 
-    // 2. Download dos CSVs das abas
     for (const sourceFile in project.tabsData) {
         const csvString = convertArrayToCSV(project.tabsData[sourceFile]);
-        downloadFile(csvString, sourceFile, 'text/csv');
+        downloadFile(csvString, sourceFile, 'text/csv;charset=utf-8;');
     }
 
-    // 3. Download do comments.json
     const commentsString = JSON.stringify(project.comments, null, 2);
     downloadFile(commentsString, 'comments.json', 'application/json');
 
@@ -398,6 +403,8 @@ function downloadFile(content, fileName, contentType) {
     const file = new Blob([content], { type: contentType });
     a.href = URL.createObjectURL(file);
     a.download = fileName;
+    document.body.appendChild(a); // Necessário para Firefox
     a.click();
+    document.body.removeChild(a); // Limpa
     URL.revokeObjectURL(a.href);
 }
