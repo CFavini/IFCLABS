@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         async function fetchProjectData(folderName) {
             try {
                 // CAMINHO AJUSTADO PARA ARQUIVOS NA RAIZ:
+                //const basePath = `./Project_Samples/${folderName}`;
                 const basePath = `./Project_Samples/${folderName}`;
 
                 // Adicionando um timestamp para tentar evitar cache em testes
