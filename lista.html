@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFCLABS - Lista de Projetos (MVP)</title>
+    <link rel="stylesheet" href="style.css">
+    </head>
+<body>
+    <header>
+        <h1>Plataforma Colaborativa IFCLABS (MVP)</h1>
+        <div id="user-info" style="color: white; text-align: right; padding-right: 20px;">
+            <span id="user-greeting"></span>
+            <button id="logout-button" style="margin-left: 10px; display: none;">Sair</button>
+        </div>
+    </header>
+
+    <main>
+        <section id="project-selector">
+            <h2>Meus Projetos de Exemplo</h2>
+            <div id="project-list">
+                <p>Carregando projetos...</p>
+            </div>
+        </section>
+
+        <section id="document-viewer" style="display: none;">
+            <h2 id="document-title"></h2>
+            <div id="document-metadata">
+                <p><strong>Criado por:</strong> <span id="meta-created-by"></span></p>
+                <p><strong>Em:</strong> <span id="meta-created-at"></span></p>
+                <p><strong>Última Modificação:</strong> <span id="meta-last-modified-by"></span> às <span id="meta-last-modified-at"></span></p>
+                <div id="document-general-comments">
+                    <h4>Comentários Gerais do Documento:</h4>
+                    <ul id="doc-comments-list"></ul>
+                </div>
+            </div>
+
+            <nav id="tab-navigation">
+                <h3>Abas do Documento:</h3>
+                <div id="tab-buttons">
+                    </div>
+            </nav>
+
+            <article id="tab-content-area">
+                <h3 id="current-tab-name"></h3>
+                <div id="data-table-container">
+                    </div>
+            </article>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 IFCLABS. MVP.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Pequeno script adicional para lista.html (logout e saudação)
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedInUser = sessionStorage.getItem('ifclabsUser');
+            const userGreetingElement = document.getElementById('user-greeting');
+            const logoutButton = document.getElementById('logout-button');
+
+            if (loggedInUser && userGreetingElement && logoutButton) {
+                userGreetingElement.textContent = `Usuário: ${loggedInUser}`;
+                logoutButton.style.display = 'inline-block';
+                logoutButton.onclick = () => {
+                    sessionStorage.removeItem('ifclabsAuthToken');
+                    sessionStorage.removeItem('ifclabsUser');
+                    alert('Você foi desconectado.');
+                    window.location.replace('index.html');
+                };
+            } else if (userGreetingElement && logoutButton) { // Se não estiver logado, mas os elementos existirem
+                 logoutButton.style.display = 'none';
+                 userGreetingElement.textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>

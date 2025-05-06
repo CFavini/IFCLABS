@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - IFCLABS</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { display: flex; flex-direction: column; min-height: 100vh; }
+        main { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .login-container {
+            width: 350px;
+            padding: 30px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+            font-size: 1.8em;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 12px 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .login-container input[type="text"]:focus,
+        .login-container input[type="password"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            outline: none;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+        .login-links {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        .login-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+        .login-links span_delimiter { /* Alterado de _ para - para ser um seletor CSS válido */
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Plataforma Colaborativa IFCLABS</h1>
+    </header>
+
+    <main>
+        <div class="login-container">
+            <h2>Acesso à Plataforma</h2>
+            <form id="login-form">
+                <div>
+                    <label for="username">Usuário (e-mail):</label>
+                    <input type="text" id="username" name="username" required placeholder="seu.email@exemplo.com">
+                </div>
+                <div>
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" name="password" required placeholder="Sua senha">
+                </div>
+                <button type="submit">Entrar</button>
+            </form>
+            <div class="login-links">
+                <a href="#">Esqueci minha senha</a>
+                <span-delimiter> | </span-delimiter>
+                <a href="#">Cadastrar novo usuário</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 IFCLABS. MVP.</p>
+    </footer>
+
+    <script>
+        // Script da página de login (index.html)
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usernameInput = document.getElementById('username').value;
+            if (!usernameInput) {
+                alert('Por favor, insira um nome de usuário para simular o login.');
+                return;
+            }
+            const fakeToken = "MVP_TOKEN_IFCLABS_" + new Date().getTime();
+            sessionStorage.setItem('ifclabsAuthToken', fakeToken);
+            sessionStorage.setItem('ifclabsUser', usernameInput);
+            alert('Login simulado com sucesso para ' + usernameInput + '! Redirecionando...');
+            window.location.href = 'lista.html';
+        });
+    </script>
+</body>
+</html>
