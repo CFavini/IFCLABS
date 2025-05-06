@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFCLABS - Visualizador de Projetos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Plataforma Colaborativa IFCLABS</h1>
+    </header>
+
+    <main>
+        <section id="project-selector">
+            <h2>Meus Projetos de Exemplo</h2>
+            <div id="project-list">
+                </div>
+        </section>
+
+        <section id="document-viewer" style="display: none;">
+            <h2 id="document-title"></h2>
+            <div id="document-metadata">
+                <p><strong>Criado por:</strong> <span id="meta-created-by"></span></p>
+                <p><strong>Em:</strong> <span id="meta-created-at"></span></p>
+                <p><strong>Última Modificação:</strong> <span id="meta-last-modified-by"></span> às <span id="meta-last-modified-at"></span></p>
+                <div id="document-general-comments">
+                    <h4>Comentários Gerais do Documento:</h4>
+                    <ul id="doc-comments-list"></ul>
+                </div>
+            </div>
+
+            <nav id="tab-navigation">
+                <h3>Abas do Documento:</h3>
+                <div id="tab-buttons">
+                    </div>
+            </nav>
+
+            <article id="tab-content-area">
+                <h3 id="current-tab-name"></h3>
+                <div id="data-table-container">
+                    </div>
+            </article>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 IFCLABS. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

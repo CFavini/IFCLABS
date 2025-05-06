@@ -1,0 +1,111 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#project-selector, #document-viewer, #tab-navigation, #tab-content-area, #document-metadata {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#project-selector h2, #document-viewer h2, #tab-navigation h3, #tab-content-area h3, #document-metadata h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+#project-list button, #tab-buttons button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+#project-list button:hover, #tab-buttons button:hover {
+    background-color: #0056b3;
+}
+
+#project-list button.active, #tab-buttons button.active {
+    background-color: #004085;
+    font-weight: bold;
+}
+
+
+#data-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+#data-table-container th, #data-table-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#data-table-container th {
+    background-color: #f0f0f0;
+}
+
+#data-table-container td.has-comment {
+    background-color: #fffacd; /* Amarelo claro para células com comentários */
+    cursor: help; /* Indica que há algo para ver */
+}
+
+#document-metadata p {
+    margin: 5px 0;
+}
+#document-metadata strong {
+    color: #555;
+}
+
+#doc-comments-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#doc-comments-list li {
+    background-color: #e9ecef;
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #333;
+    color: #fff;
+    margin-top: 30px;
+}
