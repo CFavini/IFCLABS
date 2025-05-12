@@ -1,50 +1,92 @@
-/* Estilos para botões de ação da aba e remoção de linha */
-.tab-action-buttons {
-    margin-bottom: 10px;
+/* Estilos que estavam no index.html para o login-container */
+body.login-page { /* Adicione esta classe ao <body> do index.html se quiser escopar */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-.tab-action-buttons button, .remove-row-button {
-    background-color: #6c757d; /* Cinza bootstrap 'secondary' */
+body.login-page main { /* Ou apenas 'main' se não usar a classe no body */
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    width: 350px;
+    padding: 30px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    text-align: left; /* Garante alinhamento padrão dos labels */
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.8em;
+}
+
+.login-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: calc(100% - 22px); /* (padding*2 + border*2) */
+    padding: 12px 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box; /* Importante para o width calc funcionar como esperado */
+}
+
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    outline: none;
+}
+
+.login-container button[type="submit"] { /* Mais específico para o botão de submit */
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
     color: white;
     border: none;
-    padding: 6px 12px;
-    margin-right: 8px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.login-container button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.login-links {
+    margin-top: 20px;
+    text-align: center;
     font-size: 0.9em;
 }
-.tab-action-buttons button:hover, .remove-row-button:hover {
-    background-color: #5a6268;
+
+.login-links a {
+    color: #007bff;
+    text-decoration: none;
+    margin: 0 8px;
 }
 
-.remove-row-button {
-    background-color: #dc3545; /* Vermelho bootstrap 'danger' */
-    padding: 4px 8px;
-    font-size: 0.8em;
-}
-.remove-row-button:hover {
-    background-color: #c82333;
+.login-links a:hover {
+    text-decoration: underline;
 }
 
-#save-changes-button {
-    background-color: #28a745; /* Verde bootstrap 'success' */
-    color: white;
-    padding: 10px 20px;
-    font-size: 1em;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-#save-changes-button:hover {
-    background-color: #218838;
-}
-
-/* Estilo para células editáveis */
-#data-table-container td[contenteditable="true"] {
-    background-color: #e9f5ff; /* Um azul bem claro para indicar editável */
-    outline: 1px dashed #007bff; /* Borda tracejada sutil ao focar, se o navegador aplicar */
-}
-#data-table-container td[contenteditable="true"]:focus {
-    background-color: #cfe8ff;
-    outline: 2px solid #007bff;
+.login-links span-delimiter { /* Seletor CSS válido */
+    color: #aaa;
 }
