@@ -1,45 +1,95 @@
-/* Página de login */
-body.login-page {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-body.login-page main {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Estilos gerais */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    line-height: 1.6;
+/* Reset Básico e Estilos Globais */
+body, html {
     margin: 0;
     padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    line-height: 1.6;
     background-color: #f8f9fa;
     color: #212529;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Garante que o footer fique no final */
+}
+
+header {
+    background: #343a40; /* Cinza escuro */
+    color: #fff;
+    padding: 1rem 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center; /* Para centralizar o h1 se não houver outros elementos flex */
+}
+
+header h1 {
+    margin: 0 auto; /* Centraliza o H1 dentro do header flex */
+    font-size: 1.7em;
+    font-weight: 500;
+    flex-grow: 1; /* Permite que o h1 ocupe espaço para centralizar se user-info estiver presente */
+}
+
+/* Ajuste para quando user-info está presente */
+header:has(#user-info) h1 {
+    margin: 0; /* Reseta margem se user-info estiver lá para melhor alinhamento com space-between */
+}
+
+
+#user-info {
+    font-size: 0.9em;
+    /* Se header é flex com space-between, user-info ficará à direita.
+       Se quiser que o H1 fique centralizado e user-info à direita,
+       pode ser necessário um wrapper para o H1 ou posicionamento absoluto para user-info.
+       Para simplicidade, o text-align: center no header e margin: 0 auto; no h1 funciona bem.
+       Se #user-info estiver presente, o space-between do header o colocará à direita.
+    */
+}
+
+#user-info #logout-button {
+    background-color: #6c757d; /* Cinza */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+#user-info #logout-button:hover {
+    background-color: #5a6268;
 }
 
 main {
-    flex-grow: 1;
-    padding: 25px;
+    flex-grow: 1; /* Faz o main ocupar o espaço disponível */
+    padding: 20px;
     max-width: 1300px;
     width: 95%;
-    margin: 25px auto;
-    background-color: #ffffff;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-    border-radius: 8px;
+    margin: 20px auto; /* Centraliza e adiciona margem */
 }
 
-/* Login container */
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #343a40;
+    color: #adb5bd;
+    font-size: 0.85em;
+    margin-top: auto; /* Empurra o footer para o final da página */
+}
+
+/* Estilos da Página de Login (movidos do HTML) */
+body.login-page main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
 .login-container {
-    width: 350px;
+    width: 360px;
     padding: 30px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     border-radius: 8px;
     text-align: left;
 }
@@ -47,23 +97,24 @@ main {
 .login-container h2 {
     text-align: center;
     margin-bottom: 25px;
-    color: #333;
-    font-size: 1.8em;
+    color: #343a40;
+    font-size: 1.6em;
+    font-weight: 500;
 }
 
 .login-container label {
     display: block;
     margin-bottom: 8px;
-    font-weight: bold;
-    color: #555;
+    font-weight: 500;
+    color: #495057;
 }
 
 .login-container input[type="text"],
 .login-container input[type="password"] {
-    width: calc(100% - 22px);
-    padding: 12px 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+    border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 1em;
     box-sizing: border-box;
@@ -78,14 +129,14 @@ main {
 
 .login-container button[type="submit"] {
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
+    font-size: 1.05em;
+    font-weight: 500;
     transition: background-color 0.2s ease-in-out;
 }
 
@@ -94,158 +145,155 @@ main {
 }
 
 .login-links {
-    margin-top: 20px;
+    margin-top: 18px;
     text-align: center;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .login-links a {
     color: #007bff;
     text-decoration: none;
-    margin: 0 8px;
+    margin: 0 5px;
 }
 
 .login-links a:hover {
     text-decoration: underline;
 }
 
-.login-links span-delimiter {
-    color: #aaa;
+.login-links .delimiter { /* Corrigido para classe */
+    color: #adb5bd;
 }
 
-/* Cabeçalho */
-header {
-    background: #343a40;
-    color: #fff;
-    padding: 1rem 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
-header h1 {
-    margin: 0;
-    font-size: 1.8em;
-}
-
-#user-info {
-    font-size: 0.9em;
-}
-
-#user-info button {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-#user-info button:hover {
-    background-color: #c82333;
-}
-
-/* Seções de projeto e documento */
-#project-selector, #document-viewer, #tab-navigation, #tab-content-area, #document-metadata {
+/* Estilos da Página de Lista (lista.html) */
+#project-selector,
+#document-viewer,
+#tab-navigation,
+#tab-content-area,
+#document-metadata {
     margin-bottom: 25px;
     padding: 20px;
     border: 1px solid #e9ecef;
     border-radius: 6px;
-    background-color: #fff;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-#project-selector h2, #document-viewer h2, #tab-navigation h3, #tab-content-area h3, #document-metadata h4 {
+#project-selector h2,
+#document-viewer h2 {
     margin-top: 0;
     color: #007bff;
     border-bottom: 2px solid #007bff;
     padding-bottom: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: 500;
 }
 
-#document-metadata h4 {
-    font-size: 1.1em;
+#tab-navigation h3,
+#tab-content-area h3#current-tab-name,
+#document-metadata h4,
+#document-metadata h5 { /* Adicionado h5 */
+    margin-top: 0;
     color: #495057;
-    border-bottom: 1px solid #ced4da;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    font-weight: 500;
+}
+#document-metadata h5 {
+    font-size: 1.1em; /* Ajuste para h5 */
 }
 
-#project-list button, #tab-buttons button {
+
+#project-list button,
+#tab-buttons button {
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 10px 18px;
-    margin-right: 12px;
-    margin-bottom: 12px;
+    padding: 8px 15px;
+    margin-right: 10px;
+    margin-bottom: 10px;
     cursor: pointer;
-    border-radius: 5px;
-    font-size: 1em;
-    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease-in-out;
 }
 
-#project-list button:hover, #tab-buttons button:hover {
+#project-list button:hover,
+#tab-buttons button:hover {
     background-color: #0056b3;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-#project-list button.active, #tab-buttons button.active {
-    background-color: #004085;
+#project-list button.active,
+#tab-buttons button.active {
+    background-color: #004085; 
     font-weight: bold;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* Tabela de dados */
+/* Tabela de Dados */
 #data-table-container table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 0.95em;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-top: 10px; 
+    font-size: 0.9em;
 }
 
-#data-table-container th, #data-table-container td {
+#data-table-container th,
+#data-table-container td {
     border: 1px solid #dee2e6;
-    padding: 10px 12px;
+    padding: 8px 10px;
     text-align: left;
-    vertical-align: top;
+    vertical-align: top; 
 }
 
 #data-table-container th {
     background-color: #e9ecef;
-    font-weight: bold;
+    font-weight: 600; 
     color: #495057;
 }
 
-#data-table-container tr:nth-child(even) {
+#data-table-container tr:nth-child(even) td { 
     background-color: #f8f9fa;
 }
-
-#data-table-container tr:hover {
+#data-table-container tr:hover td { 
     background-color: #e2e6ea;
+}
+
+#data-table-container td[contenteditable="true"] {
+    background-color: #e9f5ff;
+    outline: 1px dashed #007bff;
+    min-width: 50px; 
+}
+#data-table-container td[contenteditable="true"]:focus {
+    background-color: #cfe8ff;
+    outline: 2px solid #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,.5);
 }
 
 #data-table-container td.has-comment {
     background-color: #fff3cd;
-    cursor: help;
+    cursor: help; 
     position: relative;
 }
-
 #data-table-container td.has-comment::after {
     content: '';
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 8px;
-    height: 8px;
+    top: 3px;
+    right: 3px;
+    width: 7px;
+    height: 7px;
     background-color: #ffc107;
     border-radius: 50%;
+    border: 1px solid #e0a800;
 }
 
-/* Metadados e comentários */
+/* Metadados e Comentários Gerais */
 #document-metadata p {
-    margin: 8px 0;
-    font-size: 0.95em;
+    margin: 6px 0;
+    font-size: 0.9em;
 }
-
 #document-metadata strong {
     color: #343a40;
     margin-right: 5px;
@@ -259,19 +307,58 @@ header h1 {
 
 #doc-comments-list li {
     background-color: #f1f3f5;
-    padding: 10px;
-    margin-bottom: 6px;
+    padding: 8px 10px;
+    margin-bottom: 5px;
     border-radius: 4px;
-    font-size: 0.9em;
-    border-left: 3px solid #007bff;
+    font-size: 0.85em;
+    border-left: 3px solid #6c757d;
 }
 
-/* Rodapé */
-footer {
-    text-align: center;
-    padding: 20px;
-    background: #343a40;
-    color: #adb5bd;
-    margin-top: auto;
+/* Controles da Aba e Botão de Salvar */
+.controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+#tab-action-buttons-placeholder button, /* Estilo para botões dentro do placeholder */
+#save-button-container button {
+    background-color: #17a2b8; /* Info Blue */
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    margin-right: 10px; /* Para o botão de adicionar linha */
+    border-radius: 4px;
+    cursor: pointer;
     font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+#tab-action-buttons-placeholder button:hover,
+#save-button-container button:hover {
+    background-color: #138496;
+}
+
+#save-button-container button { /* Botão de Salvar/Download específico */
+    background-color: #28a745; /* Verde Success */
+    margin-right: 0; /* Remove margem direita se for o último */
+}
+#save-button-container button:hover {
+    background-color: #218838;
+}
+
+.remove-row-button {
+    background-color: #dc3545; /* Vermelho Danger */
+    color: white;
+    border: none;
+    padding: 5px 9px; 
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    line-height: 1; 
+}
+.remove-row-button:hover {
+    background-color: #c82333;
 }
