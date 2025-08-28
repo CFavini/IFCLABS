@@ -6,245 +6,275 @@
     <title>IFCLABS - Plataforma Colaborativa</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Estilos adicionais para o sistema de comentários -->
+    <!-- Estilos para o novo sistema de mudanças em lote -->
     <style>
-        /* === NOVOS ESTILOS PARA SISTEMA DE COMENTÁRIOS === */
+        /* === ESTILOS PARA SISTEMA DE MUDANÇAS EM LOTE === */
         
-        /* Modal de Comentários */
-        .comment-modal {
+        /* Indicador visual de mudanças não salvas */
+        .unsaved-changes-indicator {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #212529;
+            padding: 0.75rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+            transform: translateX(300px);
+            transition: transform 0.3s ease;
+        }
+        
+        .unsaved-changes-indicator.show {
+            transform: translateX(0);
+        }
+        
+        /* Célula modificada */
+        .cell-modified {
+            background: linear-gradient(135deg, #e7f3ff 0%, #b3d7ff 100%) !important;
+            border-left: 3px solid #007bff;
+            position: relative;
+        }
+        
+        .cell-modified::after {
+            content: '📝';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 10px;
+        }
+        
+        /* Linha nova */
+        .row-added {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+        }
+        
+        .row-added::before {
+            content: '🆕';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        /* Modal de Revisão de Mudanças */
+        .changes-review-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 2000;
         }
         
-        .comment-modal.active {
+        .changes-review-modal.active {
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        .comment-modal-content {
+        .changes-review-content {
             background: white;
             border-radius: 12px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 85%;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: modalFadeIn 0.3s ease-out;
+            width: 95%;
+            max-width: 1000px;
+            max-height: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.4s ease-out;
         }
         
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: scale(0.8) translateY(50px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
         
-        .comment-header {
+        .changes-review-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #dee2e6;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            border-radius: 12px 12px 0 0;
         }
         
-        .comment-header h3 {
+        .changes-review-header h3 {
             margin: 0;
-            font-size: 1.3em;
+            font-size: 1.4em;
         }
         
-        .close-btn {
+        .changes-count {
             background: rgba(255,255,255,0.2);
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: white;
-            padding: 0.5rem;
-            border-radius: 4px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .changes-review-body {
+            padding: 0;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .changes-summary {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .changes-list {
+            padding: 0;
+        }
+        
+        .change-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
             transition: background 0.2s;
         }
         
-        .close-btn:hover {
-            background: rgba(255,255,255,0.3);
+        .change-item:hover {
+            background: #f8f9fa;
         }
         
-        .comment-body {
-            padding: 1.5rem 2rem;
-        }
-        
-        .cell-info {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid #007bff;
-        }
-        
-        .cell-info strong {
-            color: #495057;
-        }
-        
-        /* Sistema de Check-in/Check-out */
-        .checkout-controls {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: #fff3cd;
-            border-radius: 6px;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .checkout-timer {
-            margin-left: auto;
-            font-size: 0.9rem;
-            color: #856404;
-            font-weight: 600;
-        }
-        
-        /* Threads de Comentários */
-        .comments-section {
-            margin-bottom: 1.5rem;
-        }
-        
-        .comment-thread {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            overflow: hidden;
-            transition: box-shadow 0.2s;
-        }
-        
-        .comment-thread:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .thread-header {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .thread-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .status-aberto { 
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
-            color: #155724; 
-        }
-        .status-resolvido { 
-            background: linear-gradient(135deg, #cce7ff 0%, #b3d7ff 100%); 
-            color: #004085; 
-        }
-        .status-rejeitado { 
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
-            color: #721c24; 
-        }
-        
-        .comment-entry {
-            padding: 1rem;
-            border-bottom: 1px solid #f1f3f5;
-        }
-        
-        .comment-entry:last-child {
+        .change-item:last-child {
             border-bottom: none;
         }
         
-        .comment-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+        .change-icon {
+            font-size: 1.2em;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .change-details {
+            flex-grow: 1;
+        }
+        
+        .change-location {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.25rem;
+        }
+        
+        .change-description {
+            font-size: 0.9em;
             color: #6c757d;
         }
         
-        .comment-author {
+        .change-values {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+        
+        .old-value, .new-value {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        
+        .old-value {
+            background: #f8d7da;
+            color: #721c24;
+            text-decoration: line-through;
+        }
+        
+        .new-value {
+            background: #d4edda;
+            color: #155724;
             font-weight: 600;
-            color: #495057;
         }
         
-        .comment-type {
-            padding: 0.15rem 0.5rem;
-            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-            border-radius: 12px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .change-comment-section {
+            margin-top: 0.5rem;
         }
         
-        .comment-text {
-            line-height: 1.6;
-            color: #212529;
-            background: #f8f9fa;
-            padding: 0.75rem;
-            border-radius: 6px;
-            border-left: 3px solid #007bff;
-        }
-        
-        /* Formulário de Novo Comentário */
-        .new-comment-form {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 1.5rem;
-            border-top: 1px solid #dee2e6;
-            border-radius: 0 0 12px 12px;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        .form-group select,
-        .form-group textarea {
+        .change-comment-input {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-family: inherit;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 60px;
         }
         
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .change-comment-input:focus {
             border-color: #007bff;
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
             outline: none;
         }
         
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-            font-size: 0.95em;
+        .comment-toggle {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.85em;
+            text-decoration: underline;
         }
         
-        .form-actions {
+        .comment-toggle:hover {
+            color: #0056b3;
+        }
+        
+        /* Seção de comentário geral */
+        .general-comment-section {
+            padding: 1.5rem 2rem;
+            border-top: 2px solid #007bff;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .general-comment-section h4 {
+            color: #007bff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .general-comment-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .general-comment-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            outline: none;
+        }
+        
+        /* Footer do modal */
+        .changes-review-footer {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .changes-stats {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .footer-actions {
             display: flex;
             gap: 1rem;
-            justify-content: flex-end;
         }
         
         .btn {
@@ -252,11 +282,21 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-size: 0.9em;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-1px);
         }
         
         .btn-primary {
@@ -266,17 +306,7 @@
         
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(108,117,125,0.3);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
         }
         
         .btn-success {
@@ -286,53 +316,52 @@
         
         .btn-success:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
         }
         
-        /* Melhorias nas células da tabela para comentários */
-        td.has-comment {
-            background: linear-gradient(135deg, #e7f3ff 0%, #cce7ff 100%);
-            border-left: 4px solid #007bff;
+        /* Melhorias no botão de salvar */
+        #save-changes-button {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
             position: relative;
+            overflow: hidden;
         }
         
-        td.has-comment::after {
-            content: '💬';
-            position: absolute;
-            top: 2px;
-            right: 4px;
-            font-size: 12px;
+        #save-changes-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(40,167,69,0.4);
         }
         
-        td.locked {
-            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+        #save-changes-button:disabled {
+            background: #6c757d;
             cursor: not-allowed;
-            position: relative;
+            transform: none;
+            box-shadow: none;
         }
         
-        td.locked::after {
-            content: '🔒';
+        .changes-badge {
             position: absolute;
-            top: 2px;
-            right: 4px;
-            font-size: 12px;
+            top: -8px;
+            right: -8px;
+            background: #ffc107;
+            color: #212529;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
         
-        td.editing {
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
-            outline: 2px solid #ffc107;
-            position: relative;
-        }
-        
-        td.editing::after {
-            content: '✏️';
-            position: absolute;
-            top: 2px;
-            right: 4px;
-            font-size: 12px;
-        }
-        
-        /* Notificações */
+        /* Notificações aprimoradas */
         .notification {
             position: fixed;
             top: 20px;
@@ -341,7 +370,7 @@
             border-radius: 8px;
             color: white;
             font-weight: 500;
-            z-index: 2000;
+            z-index: 3000;
             transform: translateX(400px);
             transition: transform 0.3s ease;
             max-width: 350px;
@@ -356,33 +385,13 @@
             background: linear-gradient(135deg, #28a745 0%, #218838 100%);
         }
         
-        .notification.error {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        .notification.info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
         }
         
         .notification.warning {
             background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
             color: #212529;
-        }
-        
-        /* Indicador de atividade para células */
-        .cell-activity-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,123,255,0.1);
-            border: 2px solid #007bff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -404,7 +413,7 @@
             </div>
         </section>
 
-        <!-- SEÇÃO EXISTENTE: Visualizador de Documentos (mantida mas melhorada) -->
+        <!-- SEÇÃO EXISTENTE: Visualizador de Documentos (mantida) -->
         <section id="document-viewer" style="display: none;">
             <h2 id="document-title"></h2>
             
@@ -431,10 +440,10 @@
                 
                 <div class="controls-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
                     <div id="tab-action-buttons-placeholder">
-                        <!-- Botões de ação da aba (ex: Adicionar Linha) serão inseridos aqui -->
+                        <!-- Botões de ação da aba serão inseridos aqui -->
                     </div>
                     <div id="save-button-container">
-                        <!-- Botão de Salvar/Download será inserido aqui -->
+                        <!-- Botão de Salvar será inserido aqui -->
                     </div>
                 </div>
 
@@ -445,58 +454,47 @@
         </section>
     </main>
 
-    <!-- NOVA SEÇÃO: Modal de Comentários -->
-    <div class="comment-modal" id="comment-modal">
-        <div class="comment-modal-content">
-            <div class="comment-header">
-                <h3 id="modal-title">💬 Comentários da Célula</h3>
-                <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+    <!-- Indicador de mudanças não salvas -->
+    <div id="unsaved-changes-indicator" class="unsaved-changes-indicator">
+        <span id="changes-count">0 mudanças</span> não salvas
+    </div>
+
+    <!-- Modal de Revisão de Mudanças -->
+    <div class="changes-review-modal" id="changes-review-modal">
+        <div class="changes-review-content">
+            <div class="changes-review-header">
+                <h3>📋 Revisar Mudanças</h3>
+                <div class="changes-count" id="modal-changes-count">0 mudanças</div>
+                <button class="btn btn-secondary" onclick="closeChangesReview()">✕</button>
             </div>
             
-            <div class="comment-body">
-                <div class="cell-info" id="cell-info">
-                    <strong>Célula:</strong> <span id="cell-location"></span><br>
-                    <strong>Valor Atual:</strong> <span id="cell-value"></span><br>
-                    <strong>Status:</strong> <span id="cell-status"></span>
+            <div class="changes-review-body">
+                <div class="changes-summary">
+                    <p><strong>Resumo:</strong> <span id="changes-summary-text">Nenhuma mudança detectada</span></p>
                 </div>
                 
-                <!-- NOVO: Controles de Check-in/Check-out -->
-                <div class="checkout-controls" id="checkout-controls">
-                    <button class="btn btn-success" onclick="checkoutCell()">🔒 Fazer Check-out</button>
-                    <button class="btn btn-secondary" onclick="checkinCell()">🔓 Fazer Check-in</button>
-                    <span class="checkout-timer" id="checkout-timer"></span>
-                </div>
-                
-                <!-- NOVA: Seção de Comentários -->
-                <div class="comments-section">
-                    <h4>💬 Histórico de Comentários</h4>
-                    <div id="comments-container">
-                        <!-- Comentários serão inseridos dinamicamente aqui -->
-                    </div>
+                <div class="changes-list" id="changes-list">
+                    <!-- Lista de mudanças será inserida aqui -->
                 </div>
             </div>
             
-            <!-- NOVO: Formulário para Adicionar Comentários -->
-            <div class="new-comment-form">
-                <h4>➕ Adicionar Novo Comentário</h4>
-                <div class="form-group">
-                    <label for="comment-type">Tipo de Comentário:</label>
-                    <select id="comment-type">
-                        <option value="question">❓ Pergunta</option>
-                        <option value="suggestion">💡 Sugestão</option>
-                        <option value="correction">✏️ Correção</option>
-                        <option value="approval">✅ Aprovação</option>
-                        <option value="rejection">❌ Rejeição</option>
-                        <option value="note">📝 Observação</option>
-                    </select>
+            <div class="general-comment-section">
+                <h4>💬 Comentário Geral (Opcional)</h4>
+                <textarea 
+                    id="general-comment-input" 
+                    class="general-comment-input"
+                    placeholder="Descreva o propósito geral das mudanças realizadas... Ex: 'Atualização conforme nova especificação técnica do cliente'"
+                ></textarea>
+            </div>
+            
+            <div class="changes-review-footer">
+                <div class="changes-stats">
+                    <span id="stats-text">Preparado para salvar</span>
                 </div>
-                <div class="form-group">
-                    <label for="comment-text">Comentário:</label>
-                    <textarea id="comment-text" placeholder="Digite seu comentário aqui... Seja específico e construtivo."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-secondary" onclick="closeCommentModal()">Cancelar</button>
-                    <button class="btn btn-primary" onclick="addComment()">💬 Comentar</button>
+                <div class="footer-actions">
+                    <button class="btn btn-secondary" onclick="closeChangesReview()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="saveDraftChanges()">Salvar como Rascunho</button>
+                    <button class="btn btn-success" onclick="submitChanges()">💾 Salvar e Enviar</button>
                 </div>
             </div>
         </div>
@@ -512,55 +510,50 @@
     <!-- SCRIPTS EXISTENTES (mantidos) -->
     <script src="script.js"></script>
     
-    <!-- NOVO: Script para Sistema de Comentários -->
+    <!-- NOVO: Sistema de Rastreamento de Mudanças -->
     <script>
-        // === SISTEMA DE COMENTÁRIOS AVANÇADO ===
+        // === SISTEMA DE RASTREAMENTO DE MUDANÇAS EM BACKGROUND ===
         
-        // Dados simulados de comentários (em produção virão do GitHub Issues)
-        let commentsData = {
-            "uuid-secao-id-003_Material": [
-                {
-                    threadId: "thread-001",
-                    status: "aberto",
-                    createdBy: "especialista.materiais@ifclabs.org",
-                    createdAt: "2025-01-15T10:30:00Z",
-                    entries: [
-                        {
-                            user: "especialista.materiais@ifclabs.org",
-                            timestamp: "2025-01-15T10:30:00Z",
-                            commentText: "Sugiro X70 devido à profundidade de operação. Precisa verificar se o X65 atende aos requisitos de colapso para 2000m de lâmina d'água.",
-                            type: "suggestion"
-                        },
-                        {
-                            user: "engenheiro.calculista@ifclabs.org", 
-                            timestamp: "2025-01-15T11:15:00Z",
-                            commentText: "Cálculo de colapso refeito com as condições atuais. X70 é realmente mandatório aqui. Atualizando documentação.",
-                            type: "correction"
-                        }
-                    ]
-                }
-            ]
+        // Estado global do sistema
+        let changeTracker = {
+            originalData: new Map(), // Estado original de cada célula
+            changes: new Map(),      // Mudanças realizadas
+            isTracking: false,       // Se está rastreando mudanças
+            currentUser: sessionStorage.getItem('ifclabsUser') || "usuario@exemplo.com"
         };
         
-        // Estado do sistema de check-in/check-out
-        let cellLockState = {};
-        let currentUser = sessionStorage.getItem('ifclabsUser') || "usuario@exemplo.com";
-        let userRole = "editor";
+        // Tipos de mudanças possíveis
+        const CHANGE_TYPES = {
+            CELL_EDIT: 'cell_edit',
+            ROW_ADD: 'row_add',
+            ROW_DELETE: 'row_delete'
+        };
         
-        // === FUNÇÃO DE INICIALIZAÇÃO DOS COMENTÁRIOS ===
+        // === INICIALIZAÇÃO DO SISTEMA ===
         document.addEventListener('DOMContentLoaded', function() {
-            // Espera o script.js carregar os dados, então inicializa o sistema de comentários
-            setTimeout(initializeCommentSystem, 1000);
+            console.log('Inicializando sistema de rastreamento de mudanças...');
+            
+            // Espera o script.js carregar, então inicializa nosso sistema
+            setTimeout(initializeChangeTracking, 1500);
         });
         
-        function initializeCommentSystem() {
-            console.log('Inicializando sistema de comentários...');
+        function initializeChangeTracking() {
+            console.log('Sistema de rastreamento de mudanças ativo');
             
-            // Adiciona event listeners para células editáveis
-            const observer = new MutationObserver(function(mutations) {
+            // Observer para detectar quando novas tabelas são carregadas
+            const tableObserver = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.type === 'childList') {
-                        addClickListenersToEditableCells();
+                        const addedNodes = Array.from(mutation.addedNodes);
+                        addedNodes.forEach(node => {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                if (node.tagName === 'TABLE' || node.querySelector('table')) {
+                                    setTimeout(() => {
+                                        startTrackingTable(node.tagName === 'TABLE' ? node : node.querySelector('table'));
+                                    }, 500);
+                                }
+                            }
+                        });
                     }
                 });
             });
@@ -568,390 +561,416 @@
             // Observa mudanças no container da tabela
             const tableContainer = document.getElementById('data-table-container');
             if (tableContainer) {
-                observer.observe(tableContainer, { childList: true, subtree: true });
-            }
-            
-            // Adiciona listeners iniciais
-            addClickListenersToEditableCells();
-            
-            // Limpa locks expirados a cada minuto
-            setInterval(cleanExpiredLocks, 60000);
-            
-            console.log('Sistema de comentários inicializado com sucesso!');
-        }
-        
-        function addClickListenersToEditableCells() {
-            const editableCells = document.querySelectorAll('td[contenteditable="true"], td.editable');
-            
-            editableCells.forEach(cell => {
-                // Remove listeners antigos para evitar duplicação
-                cell.removeEventListener('click', handleCellClick);
-                cell.removeEventListener('dblclick', handleCellDoubleClick);
+                tableObserver.observe(tableContainer, { childList: true, subtree: true });
                 
-                // Adiciona novos listeners
-                cell.addEventListener('click', handleCellClick);
-                cell.addEventListener('dblclick', handleCellDoubleClick);
-            });
-            
-            console.log(`Listeners adicionados a ${editableCells.length} células editáveis`);
-        }
-        
-        // === HANDLERS DE EVENTOS DAS CÉLULAS ===
-        function handleCellClick(event) {
-            // Single click abre modal de comentários
-            if (event.detail === 1) {
-                setTimeout(() => {
-                    if (event.detail === 1) {
-                        openCommentModal(event.target);
-                    }
-                }, 200);
-            }
-        }
-        
-        function handleCellDoubleClick(event) {
-            // Double click tenta editar diretamente
-            event.preventDefault();
-            const cell = event.target;
-            const cellKey = getCellKey(cell);
-            
-            if (cellLockState[cellKey] && cellLockState[cellKey].user !== currentUser) {
-                showNotification(`Célula bloqueada por ${cellLockState[cellKey].user}`, 'warning');
-                return;
+                // Também tenta inicializar tabela que já existe
+                const existingTable = tableContainer.querySelector('table');
+                if (existingTable) {
+                    startTrackingTable(existingTable);
+                }
             }
             
-            enableCellEdit(cell, cellKey);
+            // Atualiza botão de salvar periodicamente
+            setInterval(updateSaveButton, 1000);
         }
         
-        // === FUNÇÕES DO MODAL DE COMENTÁRIOS ===
-        function openCommentModal(cell) {
-            const modal = document.getElementById('comment-modal');
-            const cellKey = getCellKey(cell);
-            const rowId = getRowId(cell);
-            const columnName = getColumnName(cell);
+        // === RASTREAMENTO DE TABELA ===
+        function startTrackingTable(table) {
+            if (!table) return;
             
-            // Atualiza informações da célula no modal
-            document.getElementById('cell-location').textContent = `${rowId} → ${columnName}`;
-            document.getElementById('cell-value').textContent = cell.textContent.trim();
-            document.getElementById('cell-status').textContent = getCellStatus(cellKey);
+            console.log('Iniciando rastreamento da tabela');
+            changeTracker.isTracking = true;
             
-            // Carrega comentários existentes
-            loadComments(cellKey);
+            // Captura estado inicial de todas as células
+            captureTableSnapshot(table);
             
-            // Mostra o modal
-            modal.classList.add('active');
-            modal.setAttribute('data-cell-key', cellKey);
-            
-            console.log(`Modal aberto para célula: ${cellKey}`);
-        }
-        
-        function closeCommentModal() {
-            const modal = document.getElementById('comment-modal');
-            modal.classList.remove('active');
-            
-            // Limpa formulário
-            document.getElementById('comment-text').value = '';
-            document.getElementById('comment-type').selectedIndex = 0;
-            
-            console.log('Modal de comentários fechado');
-        }
-        
-        // === FUNÇÕES DE COMENTÁRIOS ===
-        function loadComments(cellKey) {
-            const container = document.getElementById('comments-container');
-            container.innerHTML = '';
-            
-            if (!commentsData[cellKey] || commentsData[cellKey].length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: #6c757d;">
-                        <p>📝 Nenhum comentário nesta célula ainda.</p>
-                        <p><small>Seja o primeiro a comentar!</small></p>
-                    </div>
-                `;
-                return;
-            }
-            
-            commentsData[cellKey].forEach(thread => {
-                const threadElement = createThreadElement(thread);
-                container.appendChild(threadElement);
-            });
-            
-            console.log(`Carregados ${commentsData[cellKey].length} threads para ${cellKey}`);
-        }
-        
-        function createThreadElement(thread) {
-            const threadDiv = document.createElement('div');
-            threadDiv.className = 'comment-thread';
-            
-            // Cabeçalho do thread
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'thread-header';
-            headerDiv.innerHTML = `
-                <span><strong>Thread #${thread.threadId.split('-')[1]}</strong> - iniciado por ${thread.createdBy}</span>
-                <span class="thread-status status-${thread.status}">${capitalizeFirst(thread.status.replace('_', ' '))}</span>
-            `;
-            threadDiv.appendChild(headerDiv);
-            
-            // Entradas do thread
-            thread.entries.forEach(entry => {
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'comment-entry';
-                entryDiv.innerHTML = `
-                    <div class="comment-meta">
-                        <span class="comment-author">${entry.user}</span>
-                        <span>${formatDate(entry.timestamp)}</span>
-                        <span class="comment-type">${getTypeIcon(entry.type)} ${capitalizeFirst(entry.type)}</span>
-                    </div>
-                    <div class="comment-text">${entry.commentText}</div>
-                `;
-                threadDiv.appendChild(entryDiv);
-            });
-            
-            return threadDiv;
-        }
-        
-        function addComment() {
-            const modal = document.getElementById('comment-modal');
-            const cellKey = modal.getAttribute('data-cell-key');
-            const commentType = document.getElementById('comment-type').value;
-            const commentText = document.getElementById('comment-text').value.trim();
-            
-            if (!commentText) {
-                showNotification('Por favor, digite um comentário antes de enviar', 'warning');
-                return;
-            }
-            
-            // Cria novo comentário
-            const newComment = {
-                user: currentUser,
-                timestamp: new Date().toISOString(),
-                commentText: commentText,
-                type: commentType
-            };
-            
-            // Adiciona ao thread existente ou cria novo
-            if (!commentsData[cellKey] || commentsData[cellKey].length === 0) {
-                commentsData[cellKey] = [{
-                    threadId: `thread-${Date.now()}`,
-                    status: "aberto",
-                    createdBy: currentUser,
-                    createdAt: new Date().toISOString(),
-                    entries: [newComment]
-                }];
-            } else {
-                // Adiciona ao último thread aberto
-                const lastThread = commentsData[cellKey][commentsData[cellKey].length - 1];
-                lastThread.entries.push(newComment);
-            }
+            // Adiciona listeners para células editáveis
+            addTableListeners(table);
             
             // Atualiza interface
-            loadComments(cellKey);
-            updateCellVisualState(cellKey);
+            updateChangeIndicators();
             
-            // Limpa formulário
-            document.getElementById('comment-text').value = '';
-            document.getElementById('comment-type').selectedIndex = 0;
-            
-            showNotification('Comentário adicionado com sucesso!', 'success');
-            
-            // Simula notificação para revisores (em produção seria webhook real)
-            setTimeout(() => {
-                showNotification('Revisores da IFCLABS foram notificados sobre o novo comentário', 'success');
-            }, 1500);
-            
-            console.log(`Comentário adicionado para ${cellKey}:`, newComment);
+            showNotification('Sistema de rastreamento ativo - Trabalhe normalmente!', 'info');
         }
         
-        // === SISTEMA DE CHECK-IN/CHECK-OUT ===
-        function checkoutCell() {
-            const modal = document.getElementById('comment-modal');
-            const cellKey = modal.getAttribute('data-cell-key');
+        function captureTableSnapshot(table) {
+            const rows = table.querySelectorAll('tbody tr');
             
-            if (cellLockState[cellKey]) {
-                showNotification('Célula já está em checkout por outro usuário', 'warning');
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('td[contenteditable="true"]');
+                
+                cells.forEach((cell, cellIndex) => {
+                    const cellKey = getCellKey(cell);
+                    changeTracker.originalData.set(cellKey, {
+                        value: cell.textContent.trim(),
+                        element: cell,
+                        rowIndex: rowIndex,
+                        cellIndex: cellIndex,
+                        timestamp: Date.now()
+                    });
+                });
+            });
+            
+            console.log(`Capturado snapshot de ${changeTracker.originalData.size} células`);
+        }
+        
+        function addTableListeners(table) {
+            // Listener para mudanças em células
+            table.addEventListener('input', handleCellChange);
+            table.addEventListener('blur', handleCellBlur, true);
+            
+            // Observer para novas linhas
+            const tableBody = table.querySelector('tbody');
+            if (tableBody) {
+                const rowObserver = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'childList') {
+                            mutation.addedNodes.forEach(node => {
+                                if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'TR') {
+                                    handleRowAdd(node);
+                                }
+                            });
+                        }
+                    });
+                });
+                
+                rowObserver.observe(tableBody, { childList: true });
+            }
+        }
+        
+        // === HANDLERS DE MUDANÇAS ===
+        function handleCellChange(event) {
+            const cell = event.target;
+            if (!cell.hasAttribute('contenteditable')) return;
+            
+            // Auto check-out se necessário (silencioso)
+            silentCheckoutCell(cell);
+        }
+        
+        function handleCellBlur(event) {
+            const cell = event.target;
+            if (!cell.hasAttribute('contenteditable')) return;
+            
+            const cellKey = getCellKey(cell);
+            const currentValue = cell.textContent.trim();
+            const originalData = changeTracker.originalData.get(cellKey);
+            
+            if (originalData && originalData.value !== currentValue) {
+                // Registra mudança
+                registerChange(cellKey, {
+                    type: CHANGE_TYPES.CELL_EDIT,
+                    cellKey: cellKey,
+                    location: getCellLocation(cell),
+                    oldValue: originalData.value,
+                    newValue: currentValue,
+                    timestamp: Date.now(),
+                    element: cell
+                });
+                
+                // Adiciona classe visual
+                cell.classList.add('cell-modified');
+                
+                console.log(`Mudança registrada: ${cellKey} "${originalData.value}" → "${currentValue}"`);
+            }
+            
+            updateChangeIndicators();
+        }
+        
+        function handleRowAdd(row) {
+            const rowKey = `row-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+            
+            registerChange(rowKey, {
+                type: CHANGE_TYPES.ROW_ADD,
+                rowKey: rowKey,
+                location: `Nova linha adicionada`,
+                element: row,
+                timestamp: Date.now()
+            });
+            
+            // Adiciona classe visual
+            row.classList.add('row-added');
+            
+            // Captura células da nova linha para tracking futuro
+            const cells = row.querySelectorAll('td[contenteditable="true"]');
+            cells.forEach(cell => {
+                const cellKey = getCellKey(cell);
+                changeTracker.originalData.set(cellKey, {
+                    value: cell.textContent.trim(),
+                    element: cell,
+                    timestamp: Date.now(),
+                    isNew: true
+                });
+            });
+            
+            updateChangeIndicators();
+            
+            console.log(`Nova linha adicionada: ${rowKey}`);
+        }
+        
+        // === REGISTRO E GERENCIAMENTO DE MUDANÇAS ===
+        function registerChange(changeKey, changeData) {
+            changeTracker.changes.set(changeKey, changeData);
+            updateChangeIndicators();
+        }
+        
+        function updateChangeIndicators() {
+            const changesCount = changeTracker.changes.size;
+            const indicator = document.getElementById('unsaved-changes-indicator');
+            const countSpan = document.getElementById('changes-count');
+            
+            if (changesCount > 0) {
+                countSpan.textContent = `${changesCount} mudança${changesCount > 1 ? 's' : ''}`;
+                indicator.classList.add('show');
+            } else {
+                indicator.classList.remove('show');
+            }
+            
+            updateSaveButton();
+        }
+        
+        function updateSaveButton() {
+            const saveButton = document.getElementById('save-changes-button');
+            if (!saveButton) return;
+            
+            const changesCount = changeTracker.changes.size;
+            
+            if (changesCount > 0) {
+                saveButton.disabled = false;
+                saveButton.innerHTML = `💾 Salvar Alterações`;
+                
+                // Adiciona badge com número de mudanças
+                let badge = saveButton.querySelector('.changes-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'changes-badge';
+                    saveButton.appendChild(badge);
+                }
+                badge.textContent = changesCount;
+                
+            } else {
+                saveButton.disabled = true;
+                saveButton.innerHTML = `💾 Nenhuma alteração`;
+                const badge = saveButton.querySelector('.changes-badge');
+                if (badge) {
+                    badge.remove();
+                }
+            }
+        }
+        
+        // === CHECK-OUT SILENCIOSO ===
+        function silentCheckoutCell(cell) {
+            const cellKey = getCellKey(cell);
+            
+            // Em uma implementação real, aqui faria o check-out via API
+            // Por enquanto, apenas simula
+            console.log(`Auto check-out silencioso: ${cellKey}`);
+            
+            // Adiciona indicador visual sutil
+            cell.style.outline = '1px solid rgba(0,123,255,0.3)';
+            
+            setTimeout(() => {
+                if (cell.style.outline) {
+                    cell.style.outline = '';
+                }
+            }, 2000);
+        }
+        
+        // === MODAL DE REVISÃO DE MUDANÇAS ===
+        function openChangesReview() {
+            const modal = document.getElementById('changes-review-modal');
+            const changesCount = changeTracker.changes.size;
+            
+            if (changesCount === 0) {
+                showNotification('Nenhuma mudança para revisar', 'warning');
                 return;
             }
             
-            // Realiza checkout
-            cellLockState[cellKey] = {
-                user: currentUser,
+            // Atualiza contador no modal
+            document.getElementById('modal-changes-count').textContent = 
+                `${changesCount} mudança${changesCount > 1 ? 's' : ''}`;
+            
+            // Atualiza resumo
+            document.getElementById('changes-summary-text').textContent = 
+                generateChangesSummary();
+            
+            // Popula lista de mudanças
+            populateChangesList();
+            
+            // Mostra modal
+            modal.classList.add('active');
+            
+            console.log(`Modal de revisão aberto com ${changesCount} mudanças`);
+        }
+        
+        function closeChangesReview() {
+            const modal = document.getElementById('changes-review-modal');
+            modal.classList.remove('active');
+            
+            // Limpa comentário geral
+            document.getElementById('general-comment-input').value = '';
+        }
+        
+        function generateChangesSummary() {
+            const changes = Array.from(changeTracker.changes.values());
+            const cellEdits = changes.filter(c => c.type === CHANGE_TYPES.CELL_EDIT).length;
+            const rowAdds = changes.filter(c => c.type === CHANGE_TYPES.ROW_ADD).length;
+            
+            let summary = [];
+            if (cellEdits > 0) summary.push(`${cellEdits} célula${cellEdits > 1 ? 's editadas' : ' editada'}`);
+            if (rowAdds > 0) summary.push(`${rowAdds} linha${rowAdds > 1 ? 's adicionadas' : ' adicionada'}`);
+            
+            return summary.join(', ') || 'Nenhuma mudança';
+        }
+        
+        function populateChangesList() {
+            const container = document.getElementById('changes-list');
+            container.innerHTML = '';
+            
+            Array.from(changeTracker.changes.entries()).forEach(([changeKey, change]) => {
+                const changeItem = createChangeItem(changeKey, change);
+                container.appendChild(changeItem);
+            });
+        }
+        
+        function createChangeItem(changeKey, change) {
+            const item = document.createElement('div');
+            item.className = 'change-item';
+            
+            const icon = getChangeIcon(change.type);
+            const location = change.location || 'Local não especificado';
+            
+            if (change.type === CHANGE_TYPES.CELL_EDIT) {
+                item.innerHTML = `
+                    <div class="change-icon">${icon}</div>
+                    <div class="change-details">
+                        <div class="change-location">${location}</div>
+                        <div class="change-description">Valor da célula modificado</div>
+                        <div class="change-values">
+                            <span class="old-value">${change.oldValue || '(vazio)'}</span>
+                            <span>→</span>
+                            <span class="new-value">${change.newValue || '(vazio)'}</span>
+                        </div>
+                        <div class="change-comment-section" style="display: none;">
+                            <textarea 
+                                class="change-comment-input" 
+                                placeholder="Comentário específico sobre esta mudança (opcional)..."
+                                data-change-key="${changeKey}"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <button class="comment-toggle" onclick="toggleChangeComment(this)">
+                        💬 Comentar
+                    </button>
+                `;
+            } else if (change.type === CHANGE_TYPES.ROW_ADD) {
+                item.innerHTML = `
+                    <div class="change-icon">${icon}</div>
+                    <div class="change-details">
+                        <div class="change-location">${location}</div>
+                        <div class="change-description">Nova linha adicionada ao documento</div>
+                        <div class="change-comment-section" style="display: none;">
+                            <textarea 
+                                class="change-comment-input" 
+                                placeholder="Comentário sobre a nova linha (opcional)..."
+                                data-change-key="${changeKey}"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <button class="comment-toggle" onclick="toggleChangeComment(this)">
+                        💬 Comentar
+                    </button>
+                `;
+            }
+            
+            return item;
+        }
+        
+        function toggleChangeComment(button) {
+            const changeItem = button.closest('.change-item');
+            const commentSection = changeItem.querySelector('.change-comment-section');
+            
+            if (commentSection.style.display === 'none') {
+                commentSection.style.display = 'block';
+                button.textContent = '❌ Cancelar';
+                commentSection.querySelector('textarea').focus();
+            } else {
+                commentSection.style.display = 'none';
+                button.textContent = '💬 Comentar';
+            }
+        }
+        
+        // === SALVAMENTO ===
+        function saveDraftChanges() {
+            console.log('Salvando como rascunho...');
+            showNotification('Rascunho salvo localmente', 'success');
+            closeChangesReview();
+        }
+        
+        function submitChanges() {
+            const generalComment = document.getElementById('general-comment-input').value.trim();
+            const individualComments = collectIndividualComments();
+            
+            // Prepara dados para envio
+            const submissionData = {
+                user: changeTracker.currentUser,
                 timestamp: Date.now(),
-                timeout: Date.now() + (15 * 60 * 1000) // 15 minutos
+                generalComment: generalComment,
+                changes: Array.from(changeTracker.changes.entries()).map(([key, change]) => ({
+                    key: key,
+                    ...change,
+                    individualComment: individualComments[key] || null
+                }))
             };
             
-            updateCellLockState(cellKey);
-            updateCheckoutControls(cellKey);
+            console.log('Dados preparados para submissão:', submissionData);
             
-            showNotification('Check-out realizado! Você tem 15 minutos para editar esta célula.', 'success');
-            
-            console.log(`Check-out realizado para ${cellKey} por ${currentUser}`);
-        }
-        
-        function checkinCell() {
-            const modal = document.getElementById('comment-modal');
-            const cellKey = modal.getAttribute('data-cell-key');
-            
-            if (!cellLockState[cellKey] || cellLockState[cellKey].user !== currentUser) {
-                showNotification('Você não pode fazer check-in nesta célula', 'error');
-                return;
-            }
-            
-            // Realiza checkin
-            delete cellLockState[cellKey];
-            updateCellLockState(cellKey);
-            updateCheckoutControls(cellKey);
-            
-            showNotification('Check-in realizado com sucesso', 'success');
-            
-            console.log(`Check-in realizado para ${cellKey}`);
-        }
-        
-        function updateCellLockState(cellKey) {
-            const cell = findCellByKey(cellKey);
-            if (!cell) return;
-            
-            // Remove todas as classes de estado
-            cell.classList.remove('locked', 'editing');
-            
-            if (cellLockState[cellKey]) {
-                if (cellLockState[cellKey].user === currentUser) {
-                    cell.classList.add('editing');
-                } else {
-                    cell.classList.add('locked');
-                }
-            }
-            
-            // Atualiza status no modal se estiver aberto
-            const modal = document.getElementById('comment-modal');
-            if (modal.classList.contains('active') && modal.getAttribute('data-cell-key') === cellKey) {
-                document.getElementById('cell-status').textContent = getCellStatus(cellKey);
-                updateCheckoutControls(cellKey);
-            }
-        }
-        
-        function updateCheckoutControls(cellKey) {
-            const controls = document.getElementById('checkout-controls');
-            const timer = document.getElementById('checkout-timer');
-            
-            if (cellLockState[cellKey]) {
-                if (cellLockState[cellKey].user === currentUser) {
-                    controls.style.display = 'flex';
-                    const remaining = Math.max(0, cellLockState[cellKey].timeout - Date.now());
-                    const minutes = Math.floor(remaining / 60000);
-                    const seconds = Math.floor((remaining % 60000) / 1000);
-                    timer.textContent = `Tempo restante: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-                } else {
-                    controls.style.display = 'none';
-                }
-            } else {
-                controls.style.display = 'flex';
-                timer.textContent = '';
-            }
-        }
-        
-        function cleanExpiredLocks() {
-            const now = Date.now();
-            let cleanedCount = 0;
-            
-            Object.keys(cellLockState).forEach(cellKey => {
-                if (cellLockState[cellKey].timeout < now) {
-                    delete cellLockState[cellKey];
-                    updateCellLockState(cellKey);
-                    cleanedCount++;
-                }
-            });
-            
-            if (cleanedCount > 0) {
-                console.log(`Limpados ${cleanedCount} locks expirados`);
-            }
-        }
-        
-        // === FUNÇÕES DE EDIÇÃO DIRETA ===
-        function enableCellEdit(cell, cellKey) {
-            const originalValue = cell.textContent;
-            const input = document.createElement('input');
-            
-            input.type = 'text';
-            input.value = originalValue;
-            input.style.width = '100%';
-            input.style.border = 'none';
-            input.style.background = 'transparent';
-            input.style.outline = 'none';
-            input.style.padding = '4px';
-            input.style.fontSize = 'inherit';
-            
-            cell.innerHTML = '';
-            cell.appendChild(input);
-            input.focus();
-            input.select();
-            
-            function finishEdit(save = true) {
-                const newValue = input.value.trim();
-                cell.textContent = save ? (newValue || originalValue) : originalValue;
+            // Simula envio (em produção seria uma API call)
+            setTimeout(() => {
+                showNotification(`${changeTracker.changes.size} mudanças enviadas com sucesso!`, 'success');
                 
-                if (save && newValue !== originalValue && newValue) {
-                    // Simula salvamento no sistema
-                    showNotification('Alteração salva. Aguardando aprovação dos revisores IFCLABS.', 'success');
-                    
-                    // Automaticamente adiciona comentário sobre a alteração
-                    const changeComment = {
-                        user: currentUser,
-                        timestamp: new Date().toISOString(),
-                        commentText: `Valor alterado de "${originalValue}" para "${newValue}"`,
-                        type: "correction"
-                    };
-                    
-                    if (!commentsData[cellKey]) {
-                        commentsData[cellKey] = [{
-                            threadId: `thread-${Date.now()}`,
-                            status: "aberto",
-                            createdBy: currentUser,
-                            createdAt: new Date().toISOString(),
-                            entries: [changeComment]
-                        }];
-                    } else {
-                        commentsData[cellKey][commentsData[cellKey].length - 1].entries.push(changeComment);
-                    }
-                    
-                    updateCellVisualState(cellKey);
-                }
-            }
+                // Limpa estado
+                clearAllChanges();
+                closeChangesReview();
+                
+                setTimeout(() => {
+                    showNotification('Revisores da IFCLABS foram notificados', 'info');
+                }, 1500);
+            }, 1000);
+        }
+        
+        function collectIndividualComments() {
+            const comments = {};
+            const commentInputs = document.querySelectorAll('.change-comment-input');
             
-            input.addEventListener('blur', () => finishEdit(true));
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    finishEdit(true);
-                } else if (e.key === 'Escape') {
-                    finishEdit(false);
+            commentInputs.forEach(input => {
+                const changeKey = input.dataset.changeKey;
+                const comment = input.value.trim();
+                if (comment) {
+                    comments[changeKey] = comment;
                 }
             });
+            
+            return comments;
+        }
+        
+        function clearAllChanges() {
+            // Remove classes visuais
+            document.querySelectorAll('.cell-modified').forEach(cell => {
+                cell.classList.remove('cell-modified');
+            });
+            
+            document.querySelectorAll('.row-added').forEach(row => {
+                row.classList.remove('row-added');
+            });
+            
+            // Limpa estado
+            changeTracker.changes.clear();
+            
+            // Atualiza interface
+            updateChangeIndicators();
         }
         
         // === FUNÇÕES UTILITÁRIAS ===
-        function updateCellVisualState(cellKey) {
-            const cell = findCellByKey(cellKey);
-            if (!cell) return;
-            
-            if (commentsData[cellKey] && commentsData[cellKey].length > 0) {
-                cell.classList.add('has-comment');
-            } else {
-                cell.classList.remove('has-comment');
-            }
-        }
-        
-        function getCellStatus(cellKey) {
-            if (cellLockState[cellKey]) {
-                const user = cellLockState[cellKey].user;
-                return user === currentUser ? `🔒 Em edição por você` : `🔒 Bloqueada por ${user}`;
-            }
-            
-            if (commentsData[cellKey] && commentsData[cellKey].length > 0) {
-                const totalComments = commentsData[cellKey].reduce((acc, thread) => acc + thread.entries.length, 0);
-                return `💬 ${totalComments} comentário(s)`;
-            }
-            
-            return '✅ Disponível para edição';
-        }
-        
         function getCellKey(cell) {
             const row = cell.parentElement;
             const rowId = row.getAttribute('data-row-id') || `row-${Array.from(row.parentElement.children).indexOf(row)}`;
@@ -963,48 +982,24 @@
             return `${rowId}_${columnName}`;
         }
         
-        function getRowId(cell) {
+        function getCellLocation(cell) {
             const row = cell.parentElement;
-            return row.getAttribute('data-row-id') || `row-${Array.from(row.parentElement.children).indexOf(row)}`;
-        }
-        
-        function getColumnName(cell) {
-            const columnIndex = Array.from(cell.parentElement.children).indexOf(cell);
+            const rowId = row.getAttribute('data-row-id') || `Linha ${Array.from(row.parentElement.children).indexOf(row) + 1}`;
+            const columnIndex = Array.from(row.children).indexOf(cell);
             const table = cell.closest('table');
             const headerRow = table.querySelector('thead tr');
-            return headerRow ? headerRow.children[columnIndex]?.textContent.trim() : `col-${columnIndex}`;
+            const columnName = headerRow ? headerRow.children[columnIndex]?.textContent.trim() : `Coluna ${columnIndex + 1}`;
+            
+            return `${rowId} → ${columnName}`;
         }
         
-        function findCellByKey(cellKey) {
-            const [rowId, columnName] = cellKey.split('_');
-            return document.querySelector(`tr[data-row-id="${rowId}"] td[data-column="${columnName}"]`) ||
-                   document.querySelector(`tr[data-row-id="${rowId}"] td[contenteditable="true"]`);
-        }
-        
-        function capitalizeFirst(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-        }
-        
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleString('pt-BR', {
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        function getTypeIcon(type) {
+        function getChangeIcon(changeType) {
             const icons = {
-                'question': '❓',
-                'suggestion': '💡',
-                'correction': '✏️',
-                'approval': '✅',
-                'rejection': '❌',
-                'note': '📝'
+                [CHANGE_TYPES.CELL_EDIT]: '✏️',
+                [CHANGE_TYPES.ROW_ADD]: '➕',
+                [CHANGE_TYPES.ROW_DELETE]: '➖'
             };
-            return icons[type] || '💬';
+            return icons[changeType] || '📝';
         }
         
         function showNotification(message, type = 'success') {
@@ -1018,7 +1013,7 @@
             // Anima entrada
             setTimeout(() => notification.classList.add('show'), 100);
             
-            // Remove após 5 segundos
+            // Remove após 4 segundos
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => {
@@ -1026,8 +1021,15 @@
                         container.removeChild(notification);
                     }
                 }, 300);
-            }, 5000);
+            }, 4000);
         }
+        
+        // === INTEGRAÇÃO COM SCRIPT EXISTENTE ===
+        
+        // Modifica a função downloadModifiedFiles do script.js original
+        // para usar nosso sistema de mudanças
+        window.originalDownloadModifiedFiles = window.downloadModifiedFiles;
+        window.downloadModifiedFiles = openChangesReview;
     </script>
     
     <script>
@@ -1042,7 +1044,7 @@
                 logoutButton.style.display = 'inline-block';
                 logoutButton.onclick = () => {
                     sessionStorage.removeItem('ifclabsAuthToken');
-                    sessionStorage.removeItem('ifclabsUser');
+                    sessionStorage.removeIte('ifclabsUser');
                     alert('Você foi desconectado.');
                     const repoNameSegment = '/IFCLABS';
                     let indexPath = 'index.html';
