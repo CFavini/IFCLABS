@@ -81,7 +81,9 @@
             border-radius: 12px;
             width: 95%;
             max-width: 1000px;
-            max-height: 90%;
+            max-height: 95vh;  /* Garante que nunca exceda a altura da tela */
+            display: flex;
+            flex-direction: column;  /* Layout em coluna para controle de altura */
             overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             animation: modalSlideIn 0.4s ease-out;
@@ -115,8 +117,31 @@
         
         .changes-review-body {
             padding: 0;
-            max-height: 60vh;
+            max-height: 50vh;  /* Reduzido para deixar espaço para footer */
             overflow-y: auto;
+            overflow-x: hidden;
+            /* Adiciona indicadores visuais de scroll */
+            scrollbar-width: thin;
+            scrollbar-color: #007bff #f1f3f5;
+        }
+        
+        /* Estilização personalizada da barra de rolagem para WebKit browsers */
+        .changes-review-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .changes-review-body::-webkit-scrollbar-track {
+            background: #f1f3f5;
+            border-radius: 4px;
+        }
+        
+        .changes-review-body::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 4px;
+        }
+        
+        .changes-review-body::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
         }
         
         .changes-summary {
