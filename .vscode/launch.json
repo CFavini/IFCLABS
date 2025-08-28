@@ -10,12 +10,6 @@
             "name": "Launch Microsoft Edge and open the Edge DevTools",
             "url": "http://localhost:8080",
             "webRoot": "${workspaceFolder}"
-        },
-        {
-            "type": "vscode-edge-devtools.debug",
-            "request": "attach",
-            "name": "Attach to Microsoft Edge and open the Edge DevTools",
-            "port": 9222,
-            "webRoot": "${workspaceFolder}"
-        }]
+        }
+    ]
 }
