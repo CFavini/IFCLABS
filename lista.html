@@ -3,13 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IFCLABS - Plataforma Colaborativa</title> {/* Título ajustado */}
+    <title>IFCLABS - Plataforma Colaborativa</title>
     <link rel="stylesheet" href="style.css">
-    {/* Script de verificação de token que estava aqui foi REMOVIDO. O script.js principal cuidará disso. */}
+    
+    <!-- Estilos adicionais para o sistema de comentários -->
+    <style>
+        /* === NOVOS ESTILOS PARA SISTEMA DE COMENTÁRIOS === */
+        
+        /* Modal de Comentários */
+        .comment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .comment-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .comment-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85%;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .comment-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .comment-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+        
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .comment-body {
+            padding: 1.5rem 2rem;
+        }
+        
+        .cell-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #007bff;
+        }
+        
+        .cell-info strong {
+            color: #495057;
+        }
+        
+        /* Sistema de Check-in/Check-out */
+        .checkout-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #fff3cd;
+            border-radius: 6px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .checkout-timer {
+            margin-left: auto;
+            font-size: 0.9rem;
+            color: #856404;
+            font-weight: 600;
+        }
+        
+        /* Threads de Comentários */
+        .comments-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .comment-thread {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        
+        .comment-thread:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .thread-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .thread-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-aberto { 
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
+            color: #155724; 
+        }
+        .status-resolvido { 
+            background: linear-gradient(135deg, #cce7ff 0%, #b3d7ff 100%); 
+            color: #004085; 
+        }
+        .status-rejeitado { 
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+            color: #721c24; 
+        }
+        
+        .comment-entry {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        
+        .comment-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .comment-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .comment-type {
+            padding: 0.15rem 0.5rem;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .comment-text {
+            line-height: 1.6;
+            color: #212529;
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+        }
+        
+        /* Formulário de Novo Comentário */
+        .new-comment-form {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.5rem;
+            border-top: 1px solid #dee2e6;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            outline: none;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-size: 0.95em;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9em;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(108,117,125,0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+        }
+        
+        /* Melhorias nas células da tabela para comentários */
+        td.has-comment {
+            background: linear-gradient(135deg, #e7f3ff 0%, #cce7ff 100%);
+            border-left: 4px solid #007bff;
+            position: relative;
+        }
+        
+        td.has-comment::after {
+            content: '💬';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 12px;
+        }
+        
+        td.locked {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+            cursor: not-allowed;
+            position: relative;
+        }
+        
+        td.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 12px;
+        }
+        
+        td.editing {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+            outline: 2px solid #ffc107;
+            position: relative;
+        }
+        
+        td.editing::after {
+            content: '✏️';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 12px;
+        }
+        
+        /* Notificações */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        .notification.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #212529;
+        }
+        
+        /* Indicador de atividade para células */
+        .cell-activity-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,123,255,0.1);
+            border: 2px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <h1>Plataforma Colaborativa IFCLABS</h1> {/* Tag <center> removida e título ajustado */}
+        <h1>Plataforma Colaborativa IFCLABS</h1>
         <div id="user-info">
             <span id="user-greeting"></span>
             <button id="logout-button" style="display: none;">Sair</button>
@@ -17,13 +396,15 @@
     </header>
 
     <main>
+        <!-- SEÇÃO EXISTENTE: Seletor de Projetos (mantida igual) -->
         <section id="project-selector">
-            <h2>Meus Projetos</h2> {/* Título ajustado */}
+            <h2>Meus Projetos</h2>
             <div id="project-list">
                 <p>Carregando projetos...</p>
             </div>
         </section>
 
+        <!-- SEÇÃO EXISTENTE: Visualizador de Documentos (mantida mas melhorada) -->
         <section id="document-viewer" style="display: none;">
             <h2 id="document-title"></h2>
             
@@ -33,7 +414,7 @@
                 <p><strong>Em:</strong> <span id="meta-created-at"></span></p>
                 <p><strong>Última Modificação:</strong> <span id="meta-last-modified-by"></span> às <span id="meta-last-modified-at"></span></p>
                 <div id="document-general-comments">
-                    <h5>Comentários Gerais do Documento:</h5> {/* Ajustado para h5 para hierarquia */}
+                    <h5>Comentários Gerais do Documento:</h5>
                     <ul id="doc-comments-list"></ul>
                 </div>
             </div>
@@ -41,7 +422,7 @@
             <nav id="tab-navigation">
                 <h3>Abas do Documento</h3>
                 <div id="tab-buttons">
-                    {/* Botões das abas serão inseridos aqui */}
+                    <!-- Botões das abas serão inseridos aqui -->
                 </div>
             </nav>
 
@@ -50,27 +431,607 @@
                 
                 <div class="controls-container" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
                     <div id="tab-action-buttons-placeholder">
-                        {/* Botões de ação da aba (ex: Adicionar Linha) serão inseridos aqui */}
+                        <!-- Botões de ação da aba (ex: Adicionar Linha) serão inseridos aqui -->
                     </div>
                     <div id="save-button-container">
-                        {/* Botão de Salvar/Download será inserido aqui */}
+                        <!-- Botão de Salvar/Download será inserido aqui -->
                     </div>
                 </div>
 
                 <div id="data-table-container">
-                    {/* Tabela de dados da aba será inserida aqui */}
+                    <!-- Tabela de dados da aba será inserida aqui -->
                 </div>
             </article>
         </section>
     </main>
 
+    <!-- NOVA SEÇÃO: Modal de Comentários -->
+    <div class="comment-modal" id="comment-modal">
+        <div class="comment-modal-content">
+            <div class="comment-header">
+                <h3 id="modal-title">💬 Comentários da Célula</h3>
+                <button class="close-btn" onclick="closeCommentModal()">&times;</button>
+            </div>
+            
+            <div class="comment-body">
+                <div class="cell-info" id="cell-info">
+                    <strong>Célula:</strong> <span id="cell-location"></span><br>
+                    <strong>Valor Atual:</strong> <span id="cell-value"></span><br>
+                    <strong>Status:</strong> <span id="cell-status"></span>
+                </div>
+                
+                <!-- NOVO: Controles de Check-in/Check-out -->
+                <div class="checkout-controls" id="checkout-controls">
+                    <button class="btn btn-success" onclick="checkoutCell()">🔒 Fazer Check-out</button>
+                    <button class="btn btn-secondary" onclick="checkinCell()">🔓 Fazer Check-in</button>
+                    <span class="checkout-timer" id="checkout-timer"></span>
+                </div>
+                
+                <!-- NOVA: Seção de Comentários -->
+                <div class="comments-section">
+                    <h4>💬 Histórico de Comentários</h4>
+                    <div id="comments-container">
+                        <!-- Comentários serão inseridos dinamicamente aqui -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- NOVO: Formulário para Adicionar Comentários -->
+            <div class="new-comment-form">
+                <h4>➕ Adicionar Novo Comentário</h4>
+                <div class="form-group">
+                    <label for="comment-type">Tipo de Comentário:</label>
+                    <select id="comment-type">
+                        <option value="question">❓ Pergunta</option>
+                        <option value="suggestion">💡 Sugestão</option>
+                        <option value="correction">✏️ Correção</option>
+                        <option value="approval">✅ Aprovação</option>
+                        <option value="rejection">❌ Rejeição</option>
+                        <option value="note">📝 Observação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="comment-text">Comentário:</label>
+                    <textarea id="comment-text" placeholder="Digite seu comentário aqui... Seja específico e construtivo."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="closeCommentModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="addComment()">💬 Comentar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container para notificações -->
+    <div id="notifications-container"></div>
+
     <footer>
         <p>&copy; 2025 IFCLABS. MVP.</p>
     </footer>
 
+    <!-- SCRIPTS EXISTENTES (mantidos) -->
     <script src="script.js"></script>
+    
+    <!-- NOVO: Script para Sistema de Comentários -->
     <script>
-        // Script adicional para lista.html (logout e saudação)
+        // === SISTEMA DE COMENTÁRIOS AVANÇADO ===
+        
+        // Dados simulados de comentários (em produção virão do GitHub Issues)
+        let commentsData = {
+            "uuid-secao-id-003_Material": [
+                {
+                    threadId: "thread-001",
+                    status: "aberto",
+                    createdBy: "especialista.materiais@ifclabs.org",
+                    createdAt: "2025-01-15T10:30:00Z",
+                    entries: [
+                        {
+                            user: "especialista.materiais@ifclabs.org",
+                            timestamp: "2025-01-15T10:30:00Z",
+                            commentText: "Sugiro X70 devido à profundidade de operação. Precisa verificar se o X65 atende aos requisitos de colapso para 2000m de lâmina d'água.",
+                            type: "suggestion"
+                        },
+                        {
+                            user: "engenheiro.calculista@ifclabs.org", 
+                            timestamp: "2025-01-15T11:15:00Z",
+                            commentText: "Cálculo de colapso refeito com as condições atuais. X70 é realmente mandatório aqui. Atualizando documentação.",
+                            type: "correction"
+                        }
+                    ]
+                }
+            ]
+        };
+        
+        // Estado do sistema de check-in/check-out
+        let cellLockState = {};
+        let currentUser = sessionStorage.getItem('ifclabsUser') || "usuario@exemplo.com";
+        let userRole = "editor";
+        
+        // === FUNÇÃO DE INICIALIZAÇÃO DOS COMENTÁRIOS ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Espera o script.js carregar os dados, então inicializa o sistema de comentários
+            setTimeout(initializeCommentSystem, 1000);
+        });
+        
+        function initializeCommentSystem() {
+            console.log('Inicializando sistema de comentários...');
+            
+            // Adiciona event listeners para células editáveis
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        addClickListenersToEditableCells();
+                    }
+                });
+            });
+            
+            // Observa mudanças no container da tabela
+            const tableContainer = document.getElementById('data-table-container');
+            if (tableContainer) {
+                observer.observe(tableContainer, { childList: true, subtree: true });
+            }
+            
+            // Adiciona listeners iniciais
+            addClickListenersToEditableCells();
+            
+            // Limpa locks expirados a cada minuto
+            setInterval(cleanExpiredLocks, 60000);
+            
+            console.log('Sistema de comentários inicializado com sucesso!');
+        }
+        
+        function addClickListenersToEditableCells() {
+            const editableCells = document.querySelectorAll('td[contenteditable="true"], td.editable');
+            
+            editableCells.forEach(cell => {
+                // Remove listeners antigos para evitar duplicação
+                cell.removeEventListener('click', handleCellClick);
+                cell.removeEventListener('dblclick', handleCellDoubleClick);
+                
+                // Adiciona novos listeners
+                cell.addEventListener('click', handleCellClick);
+                cell.addEventListener('dblclick', handleCellDoubleClick);
+            });
+            
+            console.log(`Listeners adicionados a ${editableCells.length} células editáveis`);
+        }
+        
+        // === HANDLERS DE EVENTOS DAS CÉLULAS ===
+        function handleCellClick(event) {
+            // Single click abre modal de comentários
+            if (event.detail === 1) {
+                setTimeout(() => {
+                    if (event.detail === 1) {
+                        openCommentModal(event.target);
+                    }
+                }, 200);
+            }
+        }
+        
+        function handleCellDoubleClick(event) {
+            // Double click tenta editar diretamente
+            event.preventDefault();
+            const cell = event.target;
+            const cellKey = getCellKey(cell);
+            
+            if (cellLockState[cellKey] && cellLockState[cellKey].user !== currentUser) {
+                showNotification(`Célula bloqueada por ${cellLockState[cellKey].user}`, 'warning');
+                return;
+            }
+            
+            enableCellEdit(cell, cellKey);
+        }
+        
+        // === FUNÇÕES DO MODAL DE COMENTÁRIOS ===
+        function openCommentModal(cell) {
+            const modal = document.getElementById('comment-modal');
+            const cellKey = getCellKey(cell);
+            const rowId = getRowId(cell);
+            const columnName = getColumnName(cell);
+            
+            // Atualiza informações da célula no modal
+            document.getElementById('cell-location').textContent = `${rowId} → ${columnName}`;
+            document.getElementById('cell-value').textContent = cell.textContent.trim();
+            document.getElementById('cell-status').textContent = getCellStatus(cellKey);
+            
+            // Carrega comentários existentes
+            loadComments(cellKey);
+            
+            // Mostra o modal
+            modal.classList.add('active');
+            modal.setAttribute('data-cell-key', cellKey);
+            
+            console.log(`Modal aberto para célula: ${cellKey}`);
+        }
+        
+        function closeCommentModal() {
+            const modal = document.getElementById('comment-modal');
+            modal.classList.remove('active');
+            
+            // Limpa formulário
+            document.getElementById('comment-text').value = '';
+            document.getElementById('comment-type').selectedIndex = 0;
+            
+            console.log('Modal de comentários fechado');
+        }
+        
+        // === FUNÇÕES DE COMENTÁRIOS ===
+        function loadComments(cellKey) {
+            const container = document.getElementById('comments-container');
+            container.innerHTML = '';
+            
+            if (!commentsData[cellKey] || commentsData[cellKey].length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                        <p>📝 Nenhum comentário nesta célula ainda.</p>
+                        <p><small>Seja o primeiro a comentar!</small></p>
+                    </div>
+                `;
+                return;
+            }
+            
+            commentsData[cellKey].forEach(thread => {
+                const threadElement = createThreadElement(thread);
+                container.appendChild(threadElement);
+            });
+            
+            console.log(`Carregados ${commentsData[cellKey].length} threads para ${cellKey}`);
+        }
+        
+        function createThreadElement(thread) {
+            const threadDiv = document.createElement('div');
+            threadDiv.className = 'comment-thread';
+            
+            // Cabeçalho do thread
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'thread-header';
+            headerDiv.innerHTML = `
+                <span><strong>Thread #${thread.threadId.split('-')[1]}</strong> - iniciado por ${thread.createdBy}</span>
+                <span class="thread-status status-${thread.status}">${capitalizeFirst(thread.status.replace('_', ' '))}</span>
+            `;
+            threadDiv.appendChild(headerDiv);
+            
+            // Entradas do thread
+            thread.entries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'comment-entry';
+                entryDiv.innerHTML = `
+                    <div class="comment-meta">
+                        <span class="comment-author">${entry.user}</span>
+                        <span>${formatDate(entry.timestamp)}</span>
+                        <span class="comment-type">${getTypeIcon(entry.type)} ${capitalizeFirst(entry.type)}</span>
+                    </div>
+                    <div class="comment-text">${entry.commentText}</div>
+                `;
+                threadDiv.appendChild(entryDiv);
+            });
+            
+            return threadDiv;
+        }
+        
+        function addComment() {
+            const modal = document.getElementById('comment-modal');
+            const cellKey = modal.getAttribute('data-cell-key');
+            const commentType = document.getElementById('comment-type').value;
+            const commentText = document.getElementById('comment-text').value.trim();
+            
+            if (!commentText) {
+                showNotification('Por favor, digite um comentário antes de enviar', 'warning');
+                return;
+            }
+            
+            // Cria novo comentário
+            const newComment = {
+                user: currentUser,
+                timestamp: new Date().toISOString(),
+                commentText: commentText,
+                type: commentType
+            };
+            
+            // Adiciona ao thread existente ou cria novo
+            if (!commentsData[cellKey] || commentsData[cellKey].length === 0) {
+                commentsData[cellKey] = [{
+                    threadId: `thread-${Date.now()}`,
+                    status: "aberto",
+                    createdBy: currentUser,
+                    createdAt: new Date().toISOString(),
+                    entries: [newComment]
+                }];
+            } else {
+                // Adiciona ao último thread aberto
+                const lastThread = commentsData[cellKey][commentsData[cellKey].length - 1];
+                lastThread.entries.push(newComment);
+            }
+            
+            // Atualiza interface
+            loadComments(cellKey);
+            updateCellVisualState(cellKey);
+            
+            // Limpa formulário
+            document.getElementById('comment-text').value = '';
+            document.getElementById('comment-type').selectedIndex = 0;
+            
+            showNotification('Comentário adicionado com sucesso!', 'success');
+            
+            // Simula notificação para revisores (em produção seria webhook real)
+            setTimeout(() => {
+                showNotification('Revisores da IFCLABS foram notificados sobre o novo comentário', 'success');
+            }, 1500);
+            
+            console.log(`Comentário adicionado para ${cellKey}:`, newComment);
+        }
+        
+        // === SISTEMA DE CHECK-IN/CHECK-OUT ===
+        function checkoutCell() {
+            const modal = document.getElementById('comment-modal');
+            const cellKey = modal.getAttribute('data-cell-key');
+            
+            if (cellLockState[cellKey]) {
+                showNotification('Célula já está em checkout por outro usuário', 'warning');
+                return;
+            }
+            
+            // Realiza checkout
+            cellLockState[cellKey] = {
+                user: currentUser,
+                timestamp: Date.now(),
+                timeout: Date.now() + (15 * 60 * 1000) // 15 minutos
+            };
+            
+            updateCellLockState(cellKey);
+            updateCheckoutControls(cellKey);
+            
+            showNotification('Check-out realizado! Você tem 15 minutos para editar esta célula.', 'success');
+            
+            console.log(`Check-out realizado para ${cellKey} por ${currentUser}`);
+        }
+        
+        function checkinCell() {
+            const modal = document.getElementById('comment-modal');
+            const cellKey = modal.getAttribute('data-cell-key');
+            
+            if (!cellLockState[cellKey] || cellLockState[cellKey].user !== currentUser) {
+                showNotification('Você não pode fazer check-in nesta célula', 'error');
+                return;
+            }
+            
+            // Realiza checkin
+            delete cellLockState[cellKey];
+            updateCellLockState(cellKey);
+            updateCheckoutControls(cellKey);
+            
+            showNotification('Check-in realizado com sucesso', 'success');
+            
+            console.log(`Check-in realizado para ${cellKey}`);
+        }
+        
+        function updateCellLockState(cellKey) {
+            const cell = findCellByKey(cellKey);
+            if (!cell) return;
+            
+            // Remove todas as classes de estado
+            cell.classList.remove('locked', 'editing');
+            
+            if (cellLockState[cellKey]) {
+                if (cellLockState[cellKey].user === currentUser) {
+                    cell.classList.add('editing');
+                } else {
+                    cell.classList.add('locked');
+                }
+            }
+            
+            // Atualiza status no modal se estiver aberto
+            const modal = document.getElementById('comment-modal');
+            if (modal.classList.contains('active') && modal.getAttribute('data-cell-key') === cellKey) {
+                document.getElementById('cell-status').textContent = getCellStatus(cellKey);
+                updateCheckoutControls(cellKey);
+            }
+        }
+        
+        function updateCheckoutControls(cellKey) {
+            const controls = document.getElementById('checkout-controls');
+            const timer = document.getElementById('checkout-timer');
+            
+            if (cellLockState[cellKey]) {
+                if (cellLockState[cellKey].user === currentUser) {
+                    controls.style.display = 'flex';
+                    const remaining = Math.max(0, cellLockState[cellKey].timeout - Date.now());
+                    const minutes = Math.floor(remaining / 60000);
+                    const seconds = Math.floor((remaining % 60000) / 1000);
+                    timer.textContent = `Tempo restante: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    controls.style.display = 'none';
+                }
+            } else {
+                controls.style.display = 'flex';
+                timer.textContent = '';
+            }
+        }
+        
+        function cleanExpiredLocks() {
+            const now = Date.now();
+            let cleanedCount = 0;
+            
+            Object.keys(cellLockState).forEach(cellKey => {
+                if (cellLockState[cellKey].timeout < now) {
+                    delete cellLockState[cellKey];
+                    updateCellLockState(cellKey);
+                    cleanedCount++;
+                }
+            });
+            
+            if (cleanedCount > 0) {
+                console.log(`Limpados ${cleanedCount} locks expirados`);
+            }
+        }
+        
+        // === FUNÇÕES DE EDIÇÃO DIRETA ===
+        function enableCellEdit(cell, cellKey) {
+            const originalValue = cell.textContent;
+            const input = document.createElement('input');
+            
+            input.type = 'text';
+            input.value = originalValue;
+            input.style.width = '100%';
+            input.style.border = 'none';
+            input.style.background = 'transparent';
+            input.style.outline = 'none';
+            input.style.padding = '4px';
+            input.style.fontSize = 'inherit';
+            
+            cell.innerHTML = '';
+            cell.appendChild(input);
+            input.focus();
+            input.select();
+            
+            function finishEdit(save = true) {
+                const newValue = input.value.trim();
+                cell.textContent = save ? (newValue || originalValue) : originalValue;
+                
+                if (save && newValue !== originalValue && newValue) {
+                    // Simula salvamento no sistema
+                    showNotification('Alteração salva. Aguardando aprovação dos revisores IFCLABS.', 'success');
+                    
+                    // Automaticamente adiciona comentário sobre a alteração
+                    const changeComment = {
+                        user: currentUser,
+                        timestamp: new Date().toISOString(),
+                        commentText: `Valor alterado de "${originalValue}" para "${newValue}"`,
+                        type: "correction"
+                    };
+                    
+                    if (!commentsData[cellKey]) {
+                        commentsData[cellKey] = [{
+                            threadId: `thread-${Date.now()}`,
+                            status: "aberto",
+                            createdBy: currentUser,
+                            createdAt: new Date().toISOString(),
+                            entries: [changeComment]
+                        }];
+                    } else {
+                        commentsData[cellKey][commentsData[cellKey].length - 1].entries.push(changeComment);
+                    }
+                    
+                    updateCellVisualState(cellKey);
+                }
+            }
+            
+            input.addEventListener('blur', () => finishEdit(true));
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    finishEdit(true);
+                } else if (e.key === 'Escape') {
+                    finishEdit(false);
+                }
+            });
+        }
+        
+        // === FUNÇÕES UTILITÁRIAS ===
+        function updateCellVisualState(cellKey) {
+            const cell = findCellByKey(cellKey);
+            if (!cell) return;
+            
+            if (commentsData[cellKey] && commentsData[cellKey].length > 0) {
+                cell.classList.add('has-comment');
+            } else {
+                cell.classList.remove('has-comment');
+            }
+        }
+        
+        function getCellStatus(cellKey) {
+            if (cellLockState[cellKey]) {
+                const user = cellLockState[cellKey].user;
+                return user === currentUser ? `🔒 Em edição por você` : `🔒 Bloqueada por ${user}`;
+            }
+            
+            if (commentsData[cellKey] && commentsData[cellKey].length > 0) {
+                const totalComments = commentsData[cellKey].reduce((acc, thread) => acc + thread.entries.length, 0);
+                return `💬 ${totalComments} comentário(s)`;
+            }
+            
+            return '✅ Disponível para edição';
+        }
+        
+        function getCellKey(cell) {
+            const row = cell.parentElement;
+            const rowId = row.getAttribute('data-row-id') || `row-${Array.from(row.parentElement.children).indexOf(row)}`;
+            const columnIndex = Array.from(row.children).indexOf(cell);
+            const table = cell.closest('table');
+            const headerRow = table.querySelector('thead tr');
+            const columnName = headerRow ? headerRow.children[columnIndex]?.textContent.trim() : `col-${columnIndex}`;
+            
+            return `${rowId}_${columnName}`;
+        }
+        
+        function getRowId(cell) {
+            const row = cell.parentElement;
+            return row.getAttribute('data-row-id') || `row-${Array.from(row.parentElement.children).indexOf(row)}`;
+        }
+        
+        function getColumnName(cell) {
+            const columnIndex = Array.from(cell.parentElement.children).indexOf(cell);
+            const table = cell.closest('table');
+            const headerRow = table.querySelector('thead tr');
+            return headerRow ? headerRow.children[columnIndex]?.textContent.trim() : `col-${columnIndex}`;
+        }
+        
+        function findCellByKey(cellKey) {
+            const [rowId, columnName] = cellKey.split('_');
+            return document.querySelector(`tr[data-row-id="${rowId}"] td[data-column="${columnName}"]`) ||
+                   document.querySelector(`tr[data-row-id="${rowId}"] td[contenteditable="true"]`);
+        }
+        
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('pt-BR', {
+                year: 'numeric',
+                month: 'short',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function getTypeIcon(type) {
+            const icons = {
+                'question': '❓',
+                'suggestion': '💡',
+                'correction': '✏️',
+                'approval': '✅',
+                'rejection': '❌',
+                'note': '📝'
+            };
+            return icons[type] || '💬';
+        }
+        
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notifications-container');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            // Anima entrada
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Remove após 5 segundos
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (container.contains(notification)) {
+                        container.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    </script>
+    
+    <script>
+        // Script adicional para lista.html (logout e saudação) - MANTIDO IGUAL
         document.addEventListener('DOMContentLoaded', () => {
             const loggedInUser = sessionStorage.getItem('ifclabsUser');
             const userGreetingElement = document.getElementById('user-greeting');
@@ -83,7 +1044,6 @@
                     sessionStorage.removeItem('ifclabsAuthToken');
                     sessionStorage.removeItem('ifclabsUser');
                     alert('Você foi desconectado.');
-                    // Determina o caminho correto para index.html ao fazer logout
                     const repoNameSegment = '/IFCLABS';
                     let indexPath = 'index.html';
                     if (window.location.pathname.toLowerCase().startsWith(repoNameSegment.toLowerCase() + '/')) {
@@ -95,7 +1055,6 @@
                  logoutButton.style.display = 'none';
                  userGreetingElement.textContent = '';
             }
-            // Se não estiver logado, o script principal (script.js) já deve ter redirecionado
         });
     </script>
 </body>

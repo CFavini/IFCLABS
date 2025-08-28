@@ -5,10 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
+            "type": "vscode-edge-devtools.debug",
             "request": "launch",
-            "name": "Open index.html",
-            "file": "c:\\Users\\cefav\\source\\IFCLabs\\IFCLABS\\app_web\\index.html"
-        }
-    ]
+            "name": "Launch Microsoft Edge and open the Edge DevTools",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "vscode-edge-devtools.debug",
+            "request": "attach",
+            "name": "Attach to Microsoft Edge and open the Edge DevTools",
+            "port": 9222,
+            "webRoot": "${workspaceFolder}"
+        }]
 }
